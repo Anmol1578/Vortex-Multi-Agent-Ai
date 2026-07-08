@@ -1,13 +1,14 @@
 import { getAuth } from "firebase-admin/auth";
 import { app } from "../config/firebase.js";
-import User from "../models/User.js";
+import User from "../models/user.model.js";
 import { createConnection } from "mongoose";
+import crypto from "crypto";
 
 export const login = async (req, res) => {
   try {
     const { token } = req.body;
     const decoded = await getAuth(app).verifyIdToken(token);
-    const user = await User.findOne({ firebaseId: decoded.uid });
+    let user = await User.findOne({ firebaseId: decoded.uid });
 
     if (!user) {
       user = await User.create({
