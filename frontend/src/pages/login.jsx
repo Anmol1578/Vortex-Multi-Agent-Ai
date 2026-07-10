@@ -27,8 +27,7 @@ function LandingPage() {
     }
   };
 
-  return <div className="h-screen flex bg-[#">
-
+  return <div> Login
 
   </div>;
 }
