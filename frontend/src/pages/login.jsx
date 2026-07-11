@@ -1,35 +1,1038 @@
+// import { signInWithPopup } from "firebase/auth";
+// import React from "react";
+// import { auth, googleProvider } from "../../utils/firebase";
+// import api from "../../utils/axios";
+
+// function LandingPage() {
+//   const handleLogin = async (token) => {
+//     try {
+//       const data = await api.post("/auth/login", { token });
+//       console.log("Login response:", data);
+//     } catch (error) {
+//       console.error("Error during login:", error);
+//     }
+//   };
+
+//   const googleLogin = async () => {
+//     try {
+//       const data = await signInWithPopup(auth, googleProvider);
+
+//       const token = await data.user.getIdToken();
+//       console.log("Token:", token);
+//       await handleLogin(token);
+
+//       console.log("Google login successful:", data);
+//     } catch (error) {
+//       console.error("Error signing in with Google:", error);
+//     }
+//   };
+
+//   return <div> Login
+
+//   </div>;
+// }
+
+// export default LandingPage;
+
+// import { signInWithPopup } from "firebase/auth";
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { auth, googleProvider } from "../../utils/firebase";
+// import api from "../../utils/axios";
+
+// const AGENTS = [
+//   { label: "Researcher", detail: "gathers context", color: "#6E6FEA" },
+//   { label: "Planner", detail: "breaks down tasks", color: "#4FD1C5" },
+//   { label: "Coder", detail: "writes & tests", color: "#F0B45E" },
+//   { label: "Reviewer", detail: "checks output", color: "#F0729A" },
+// ];
+
+// const ORBIT_RADIUS = 150;
+// const orbitPositions = AGENTS.map((_, i) => {
+//   const angle = (i / AGENTS.length) * 2 * Math.PI - Math.PI / 2;
+//   return {
+//     x: Math.cos(angle) * ORBIT_RADIUS,
+//     y: Math.sin(angle) * ORBIT_RADIUS,
+//   };
+// });
+
+// const STATS = [
+//   { value: "4", label: "specialized agents" },
+//   { value: "12k+", label: "tasks completed" },
+//   { value: "99.9%", label: "uptime" },
+//   { value: "<1min", label: "to get started" },
+// ];
+
+// function Login() {
+//   const navigate = useNavigate();
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+
+//   const handleLogin = async (token) => {
+//     try {
+//       const data = await api.post("/auth/login", { token });
+//       console.log("Login response:", data);
+//     } catch (error) {
+//       console.error("Error during login:", error);
+//       throw error;
+//     }
+//   };
+
+//   const googleLogin = async () => {
+//     setError("");
+//     setLoading(true);
+//     try {
+//       const data = await signInWithPopup(auth, googleProvider);
+//       const token = await data.user.getIdToken();
+//       await handleLogin(token);
+//       navigate("/dashboard");
+//     } catch (error) {
+//       console.error("Error signing in with Google:", error);
+//       setError("Couldn't sign you in. Please try again.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-[#FAF9F6] text-[#1C1B1F] font-[Inter,sans-serif] antialiased overflow-x-hidden">
+//       {/* Ambient gradient mesh */}
+//       <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+//         <div className="absolute -top-32 left-1/4 w-[560px] h-[560px] rounded-full bg-[#6E6FEA]/12 blur-[130px]" />
+//         <div className="absolute top-1/3 -right-32 w-[480px] h-[480px] rounded-full bg-[#4FD1C5]/12 blur-[120px]" />
+//         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-[#F0B45E]/8 blur-[110px]" />
+//       </div>
+
+//       <style>{`
+//         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+//         @keyframes spin-slow-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+//         @keyframes pulse-core {
+//           0%, 100% { box-shadow: 0 0 40px 4px rgba(110,111,234,0.25); }
+//           50% { box-shadow: 0 0 55px 10px rgba(79,209,197,0.25); }
+//         }
+//       `}</style>
+
+//       {/* Header */}
+//       <header className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF9F6]/75 border-b border-black/[0.05]">
+//         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+//           <span className="font-[Space_Grotesk,sans-serif] text-xl font-semibold tracking-tight">
+//             Vortex <span className="bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5] bg-clip-text text-transparent">AI</span>
+//           </span>
+//           <nav className="hidden md:flex items-center gap-9 text-sm text-black/50">
+//             <a href="#agents" className="hover:text-black transition-colors">Agents</a>
+//             <a href="#how" className="hover:text-black transition-colors">Pipeline</a>
+//             <a href="#faq" className="hover:text-black transition-colors">Docs</a>
+//           </nav>
+//           <button
+//             onClick={googleLogin}
+//             disabled={loading}
+//             className="inline-flex items-center gap-2 text-sm font-medium rounded-full pl-1.5 pr-4 py-1.5 border border-black/10 hover:border-black/20 hover:bg-black/[0.02] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+//           >
+//             <span className="bg-white rounded-full p-1 shadow-sm">
+//               <GoogleIcon size={14} />
+//             </span>
+//             {loading ? "Signing in…" : "Sign in"}
+//           </button>
+//         </div>
+//       </header>
+
+//       <main>
+//         {/* Hero */}
+//         <section className="max-w-6xl mx-auto px-6 pt-20 md:pt-24 pb-28 grid md:grid-cols-2 gap-16 items-center">
+//           <div>
+//             <span className="inline-flex items-center gap-2 text-xs font-medium tracking-wide uppercase text-[#6B5FD9] bg-[#6E6FEA]/8 border border-[#6E6FEA]/15 rounded-full px-3 py-1.5 mb-6">
+//               <span className="w-1.5 h-1.5 rounded-full bg-[#6E6FEA]" />
+//               Multi-agent AI platform
+//             </span>
+
+//             <h1 className="font-[Space_Grotesk,sans-serif] text-5xl md:text-6xl font-semibold leading-[1.05] tracking-tight mb-6">
+//               Agents that pull
+//               <br />
+//               <span className="bg-gradient-to-r from-[#6E6FEA] via-[#8B7DF0] to-[#4FD1C5] bg-clip-text text-transparent">
+//                 everything into orbit.
+//               </span>
+//             </h1>
+
+//             <p className="text-black/50 text-lg leading-relaxed max-w-md mb-10">
+//               Research, planning, coding, and review — run by specialized
+//               agents that coordinate around a single core, so you only manage
+//               the outcome.
+//             </p>
+
+//             <button
+//               onClick={googleLogin}
+//               disabled={loading}
+//               className="inline-flex items-center gap-3 bg-[#1C1B1F] text-white font-medium text-sm rounded-full pl-2 pr-6 py-2.5 hover:shadow-xl hover:shadow-[#6E6FEA]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+//             >
+//               <span className="bg-white rounded-full p-2">
+//                 <GoogleIcon />
+//               </span>
+//               {loading ? "Signing in…" : "Continue with Google"}
+//             </button>
+
+//             {error && <p className="text-[#D9534F] text-sm mt-4">{error}</p>}
+//             <p className="text-black/35 text-xs mt-5">
+//               No credit card required · agents ready in under a minute
+//             </p>
+//           </div>
+
+//           {/* Signature element: orbit of agents around a core, light mode */}
+//           <div className="relative h-[420px] hidden md:flex items-center justify-center">
+//             <div className="absolute w-[300px] h-[300px] rounded-full border border-black/[0.06]" />
+//             <div className="absolute w-[220px] h-[220px] rounded-full border border-black/[0.05]" />
+
+//             <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#6E6FEA] to-[#4FD1C5] flex items-center justify-center motion-safe:animate-[pulse-core_3s_ease-in-out_infinite] z-10">
+//               <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold text-white">
+//                 CORE
+//               </span>
+//             </div>
+
+//             <div className="absolute w-full h-full motion-safe:animate-[spin-slow_26s_linear_infinite]">
+//               {AGENTS.map((agent, i) => (
+//                 <div
+//                   key={agent.label}
+//                   className="absolute top-1/2 left-1/2"
+//                   style={{ transform: `translate(${orbitPositions[i].x}px, ${orbitPositions[i].y}px)` }}
+//                 >
+//                   <div className="motion-safe:animate-[spin-slow-rev_26s_linear_infinite] -translate-x-1/2 -translate-y-1/2">
+//                     <div className="w-32 rounded-xl border border-black/[0.06] bg-white/80 backdrop-blur-md px-3.5 py-2.5 shadow-[0_8px_24px_rgba(28,27,31,0.08)] hover:-translate-y-1 transition-transform">
+//                       <div className="flex items-center gap-1.5 mb-0.5">
+//                         <span className="w-1.5 h-1.5 rounded-full" style={{ background: agent.color }} />
+//                         <p className="font-[Space_Grotesk,sans-serif] text-[13px] font-medium">
+//                           {agent.label}
+//                         </p>
+//                       </div>
+//                       <p className="text-[11px] text-black/40">{agent.detail}</p>
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Agents / features */}
+//         <section id="agents" className="max-w-6xl mx-auto px-6 py-24 border-t border-black/[0.06]">
+//           <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-3">
+//             Every agent has a job.
+//           </h2>
+//           <p className="text-black/45 max-w-xl mb-14 text-lg">
+//             Define the roster once. Vortex routes tasks to the right agent
+//             and hands off context automatically between them.
+//           </p>
+
+//           <div className="grid md:grid-cols-3 gap-6">
+//             <FeatureCard
+//               tag="01"
+//               title="Specialized roles"
+//               text="Each agent is scoped to one job, so outputs stay focused and predictable."
+//               accent="#6E6FEA"
+//             />
+//             <FeatureCard
+//               tag="02"
+//               title="Shared context"
+//               text="Agents pass structured context to each other — nothing gets lost between hand-offs."
+//               accent="#4FD1C5"
+//             />
+//             <FeatureCard
+//               tag="03"
+//               title="One dashboard"
+//               text="Watch the whole pipeline run in real time, and step in wherever you need to."
+//               accent="#F0B45E"
+//             />
+//           </div>
+//         </section>
+
+//         {/* How it works */}
+//         <section id="how" className="border-t border-black/[0.06] bg-white/50">
+//           <div className="max-w-6xl mx-auto px-6 py-24">
+//             <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-14">
+//               How a task moves through the pipeline
+//             </h2>
+//             <div className="grid md:grid-cols-4 gap-8">
+//               <Step n="01" title="Submit a task" text="Describe the outcome you want in plain language." />
+//               <Step n="02" title="Agents activate" text="The core assigns work to the relevant agents." />
+//               <Step n="03" title="Work happens" text="Each agent runs its step and passes context forward." />
+//               <Step n="04" title="Review & ship" text="You get a merged result, ready to approve or refine." />
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Stats strip — replaces a 3rd repeated CTA */}
+//         <section className="border-t border-black/[0.06]">
+//           <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+//             {STATS.map((s) => (
+//               <div key={s.label} className="text-center md:text-left">
+//                 <p className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5] bg-clip-text text-transparent">
+//                   {s.value}
+//                 </p>
+//                 <p className="text-black/45 text-sm mt-1">{s.label}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </section>
+//       </main>
+
+//       <footer className="border-t border-black/[0.06] py-8 text-center text-xs text-black/35">
+//         © {new Date().getFullYear()} Vortex AI — multi-agent AI platform
+//       </footer>
+//     </div>
+//   );
+// }
+
+// function FeatureCard({ tag, title, text, accent }) {
+//   return (
+//     <div className="rounded-2xl border border-black/[0.06] bg-white/70 backdrop-blur-sm p-7 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(28,27,31,0.08)] transition-all">
+//       <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold" style={{ color: accent }}>{tag}</span>
+//       <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mt-3 mb-2">{title}</h3>
+//       <p className="text-black/45 text-sm leading-relaxed">{text}</p>
+//     </div>
+//   );
+// }
+
+// function Step({ n, title, text }) {
+//   return (
+//     <div>
+//       <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold text-[#6E6FEA]">{n}</span>
+//       <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mt-2 mb-2">{title}</h3>
+//       <p className="text-black/45 text-sm leading-relaxed">{text}</p>
+//     </div>
+//   );
+// }
+
+// function GoogleIcon({ size = 16 }) {
+//   return (
+//     <svg width={size} height={size} viewBox="0 0 18 18" aria-hidden="true">
+//       <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+//       <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.98v2.33A9 9 0 0 0 9 18z"/>
+//       <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.05l2.99-2.33z"/>
+//       <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.95l2.99 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
+//     </svg>
+//   );
+// }
+
+// export default Login;
+
 import { signInWithPopup } from "firebase/auth";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../../utils/firebase";
 import api from "../../utils/axios";
+import Dashboard from "./Dashboard";
 
-function LandingPage() {
+const AGENTS = [
+  { name: "RESEARCHER", task: "indexing source context", status: "active" },
+  { name: "CODER", task: "writing + running tests", status: "active" },
+  { name: "REVIEWER", task: "diffing against spec", status: "idle" },
+];
+
+const STATUS_STYLES = {
+  active: { dot: "#1E7A56", label: "ACTIVE", text: "text-[#1E7A56]" },
+  queued: { dot: "#C48A34", label: "QUEUED", text: "text-[#C48A34]" },
+  idle: { dot: "#14151A4D", label: "IDLE", text: "text-black/35" },
+};
+
+const FEATURES = [
+  {
+    proc: "PROC_01",
+    title: "Specialized roles",
+    text: "Each agent is scoped to one job, so outputs stay focused and predictable.",
+    cmd: "spawn --role=scoped",
+  },
+  {
+    proc: "PROC_02",
+    title: "Shared context",
+    text: "Agents pass structured context to each other — nothing gets lost between hand-offs.",
+    cmd: "ctx.pipe(next_agent)",
+  },
+  {
+    proc: "PROC_03",
+    title: "One dashboard",
+    text: "Watch the whole pipeline run in real time, and step in wherever you need to.",
+    cmd: "watch --pipeline",
+  },
+];
+
+const PIPELINE_STEPS = [
+  {
+    n: "01",
+    title: "Submit a task",
+    text: "Describe the outcome you want in plain language.",
+  },
+  {
+    n: "02",
+    title: "Agents activate",
+    text: "The core assigns work to the relevant agents.",
+  },
+  {
+    n: "03",
+    title: "Work happens",
+    text: "Each agent runs its step and passes context forward.",
+  },
+  {
+    n: "04",
+    title: "Review & ship",
+    text: "You get a merged result, ready to approve or refine.",
+  },
+];
+
+const CAPABILITIES = [
+  {
+    tag: "PROTOCOL",
+    title: "MCP-native",
+    text: "Connects to your existing tools over Model Context Protocol — no custom integration layer.",
+    icon: "plug",
+  },
+  {
+    tag: "RUNTIME",
+    title: "Sandboxed execution",
+    text: "Every action runs isolated. Nothing touches production until you sign off.",
+    icon: "box",
+  },
+  {
+    tag: "CONTROL",
+    title: "Human checkpoints",
+    text: "Approval gates sit before any high-stakes or irreversible action.",
+    icon: "flag",
+  },
+  {
+    tag: "AUDIT",
+    title: "Full trace log",
+    text: "Every decision, tool call, and hand-off is logged and replayable.",
+    icon: "log",
+  },
+];
+
+function CapIcon({ name }) {
+  const common = {
+    width: 18,
+    height: 18,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "#14151A",
+    strokeWidth: 1.5,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
+  if (name === "plug")
+    return (
+      <svg {...common}>
+        <path d="M9 3v5M15 3v5M6 8h12l-1 4a5 5 0 0 1-10 0L6 8Z" />
+        <path d="M12 17v4" />
+      </svg>
+    );
+  if (name === "box")
+    return (
+      <svg {...common}>
+        <path d="M3 8.5 12 4l9 4.5-9 4.5-9-4.5Z" />
+        <path d="M3 8.5V16l9 4.5 9-4.5V8.5" />
+        <path d="M12 13v7.5" />
+      </svg>
+    );
+  if (name === "flag")
+    return (
+      <svg {...common}>
+        <path d="M5 3v18" />
+        <path d="M5 4h11l-2.5 3.5L16 11H5" />
+      </svg>
+    );
+  return (
+    <svg {...common}>
+      <path d="M5 3h9l5 5v13H5V3Z" />
+      <path d="M14 3v5h5" />
+      <path d="M8 13h8M8 17h5" />
+    </svg>
+  );
+}
+
+function TypeLine({
+  text,
+  startDelay = 0,
+  speed = 26,
+  className = "",
+  cursor = true,
+}) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let interval;
+    setCount(0);
+    const timeout = setTimeout(() => {
+      let i = 0;
+      interval = setInterval(() => {
+        i += 1;
+        setCount(i);
+        if (i >= text.length) clearInterval(interval);
+      }, speed);
+    }, startDelay);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [text, startDelay, speed]);
+  return (
+    <span className={className}>
+      {text.slice(0, count)}
+      {cursor && (
+        <span className="inline-block w-[6px] h-[11px] bg-current ml-0.5 align-middle motion-safe:animate-[blink_0.9s_step-end_infinite]" />
+      )}
+    </span>
+  );
+}
+
+function BinaryTicker({ className = "", bits = 6, interval = 700 }) {
+  const [val, setVal] = useState(() =>
+    Array.from({ length: bits }, () => (Math.random() > 0.5 ? 1 : 0)).join(""),
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVal(
+        Array.from({ length: bits }, () => (Math.random() > 0.5 ? 1 : 0)).join(
+          "",
+        ),
+      );
+    }, interval);
+    return () => clearInterval(id);
+  }, [bits, interval]);
+  return <span className={className}>{val}</span>;
+}
+
+function hexId() {
+  return Array.from(
+    { length: 8 },
+    () => "0123456789ABCDEF"[Math.floor(Math.random() * 16)],
+  ).join("");
+}
+
+function BinaryColumn({ className }) {
+  const [rows, setRows] = useState(() =>
+    Array.from({ length: 28 }, () =>
+      Array.from({ length: 6 }, () => (Math.random() > 0.5 ? 1 : 0)).join(""),
+    ),
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRows((prev) => {
+        const next = [...prev];
+        const i = Math.floor(Math.random() * next.length);
+        next[i] = Array.from({ length: 6 }, () =>
+          Math.random() > 0.5 ? 1 : 0,
+        ).join("");
+        return next;
+      });
+    }, 900);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div
+      aria-hidden="true"
+      className={`font-mono text-[10px] leading-[1.7] text-[#14151A] select-none pointer-events-none ${className}`}
+    >
+      {rows.map((r, i) => (
+        <div key={i}>{r}</div>
+      ))}
+    </div>
+  );
+}
+
+function Login() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [clock, setClock] = useState("");
+  const [ids, setIds] = useState(() => AGENTS.map(() => hexId()));
+
+  useEffect(() => {
+    const tick = () =>
+      setClock(
+        new Date().toLocaleTimeString("en-US", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      );
+    tick();
+    const clockId = setInterval(tick, 1000);
+    const idId = setInterval(() => {
+      setIds((prev) => {
+        const next = [...prev];
+        const i = Math.floor(Math.random() * next.length);
+        next[i] = hexId();
+        return next;
+      });
+    }, 1600);
+    return () => {
+      clearInterval(clockId);
+      clearInterval(idId);
+    };
+  }, []);
+
   const handleLogin = async (token) => {
     try {
-      const data = await api.post("/auth/login", { token });
+      const { data } = await api.post("/api/auth/login", { token });
       console.log("Login response:", data);
+      return data;
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error(error);
+      throw error;
     }
   };
 
   const googleLogin = async () => {
+    setError("");
+    setLoading(true);
+
     try {
-      const data = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const token = await result.user.getIdToken();
 
-      const token = await data.user.getIdToken();
-      console.log("Token:", token);
-      await handleLogin(token);
+      const response = await handleLogin(token);
 
-      console.log("Google login successful:", data);
+      if (!response?.user) {
+        throw new Error(
+          "Authentication failed. User information was not returned.",
+        );
+      }
+
+      navigate("/dashboard");
     } catch (error) {
-      console.error("Error signing in with Google:", error);
+      console.error("Google authentication failed:", error);
+
+      if (error.code === "auth/popup-closed-by-user") {
+        setError("Sign-in was cancelled before completion.");
+      } else if (error.code === "auth/network-request-failed") {
+        setError(
+          "Network error. Please check your internet connection and try again.",
+        );
+      } else if (error.response?.status === 401) {
+        setError("Authentication failed. Please sign in again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  return <div> Login
+  return (
+    <div className="min-h-screen bg-[#F7F6F2] text-[#14151A] font-[Inter,sans-serif] antialiased overflow-x-hidden">
+      {/* Faint engineering grid */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.4]"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(20,21,26,0.09) 1px, transparent 1px)",
+          backgroundSize: "26px 26px",
+        }}
+      />
+      <BinaryColumn className="hidden xl:block fixed top-32 left-8 opacity-[0.05] -z-10" />
+      <BinaryColumn className="hidden xl:block fixed top-32 right-8 opacity-[0.05] -z-10" />
 
-  </div>;
+      <style>{`
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+        @keyframes eq {
+          0%, 100% { transform: scaleY(0.3); }
+          50% { transform: scaleY(1); }
+        }
+        @keyframes riseIn {
+          from { opacity: 0; transform: translateY(18px) scale(0.985); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes drift {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(18px, -14px) scale(1.05); }
+        }
+        @keyframes sheen {
+          0% { transform: translateX(-120%) skewX(-12deg); }
+          100% { transform: translateX(220%) skewX(-12deg); }
+        }
+        .glass-panel {
+          background: rgba(255,255,255,0.55);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+        }
+        .glass-row {
+          transition: background 0.4s ease, transform 0.4s ease;
+        }
+        .glass-row:hover {
+          background: rgba(255,255,255,0.5);
+          transform: translateX(2px);
+        }
+        @keyframes lineScan {
+          0% { transform: scaleX(0); opacity: 1; }
+          70% { transform: scaleX(1); opacity: 1; }
+          88% { transform: scaleX(1); opacity: 0.35; }
+          100% { transform: scaleX(0); opacity: 0; }
+        }
+        @keyframes dotLive {
+          0%, 18% { background: #F7F6F2; border-color: rgba(20,21,26,0.15); box-shadow: none; }
+          25%, 85% { background: #1E7A56; border-color: #1E7A56; box-shadow: 0 0 0 4px rgba(30,122,86,0.15); }
+          95%, 100% { background: #F7F6F2; border-color: rgba(20,21,26,0.15); box-shadow: none; }
+        }
+      `}</style>
+
+      {/* Header */}
+      <header className="sticky top-0 z-20 backdrop-blur-xl bg-[#F7F6F2]/85 border-b border-black/[0.07]">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="font-[Space_Grotesk,sans-serif] text-lg font-semibold tracking-tight flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite]" />
+            VORTEX
+            <span className="text-black/35 font-mono text-xs font-normal tracking-normal">
+              /ai
+            </span>
+          </span>
+          <nav className="hidden md:flex items-center gap-9 text-sm text-black/50 font-[IBM_Plex_Mono,monospace]">
+            {["agents", "how", "faq"].map((id, idx) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="relative hover:text-black transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-px after:w-0 after:bg-[#1E7A56] after:transition-all after:duration-300 hover:after:w-full"
+              >
+                {idx === 1 ? "pipeline" : id === "faq" ? "docs" : id}
+              </a>
+            ))}
+          </nav>
+          <button
+            onClick={googleLogin}
+            disabled={loading}
+            className="inline-flex items-center gap-2 text-sm font-medium rounded-md pl-1.5 pr-4 py-1.5 border border-black/15 hover:border-black/30 hover:bg-black/[0.02] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="bg-white rounded-sm p-1 shadow-sm">
+              <GoogleIcon size={14} />
+            </span>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </div>
+      </header>
+
+      <main>
+        {/* Hero */}
+        <section className="max-w-6xl mx-auto px-6 pt-20 md:pt-24 pb-28 grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-[IBM_Plex_Mono,monospace] tracking-wide uppercase text-[#1E7A56] bg-[#1E7A56]/[0.06] border border-[#1E7A56]/20 rounded-md px-3 py-1.5 mb-6 motion-safe:animate-[fadeUp_0.6s_ease-out_both]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite]" />
+              system status: operational
+            </span>
+
+            <h1 className="font-[Space_Grotesk,sans-serif] text-5xl md:text-[3.4rem] font-semibold leading-[1.05] tracking-tight mb-6 motion-safe:animate-[fadeUp_0.7s_ease-out_0.08s_both]">
+              Agents that execute.
+              <br />
+              <span className="text-[#1E7A56]">Not just orchestrate.</span>
+            </h1>
+
+            <p className="text-black/55 text-lg leading-relaxed max-w-md mb-10 motion-safe:animate-[fadeUp_0.7s_ease-out_0.16s_both]">
+              Research, coding, and review — run by specialized agents that hand
+              off structured context to each other. You approve the outcome, not
+              the busywork.
+            </p>
+
+            <button
+              onClick={googleLogin}
+              disabled={loading}
+              className="inline-flex items-center gap-3 bg-[#14151A] text-white font-medium text-sm rounded-md pl-2 pr-6 py-2.5 transition-all duration-300 ease-out hover:bg-[#1E7A56] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(30,122,86,0.25)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed motion-safe:animate-[fadeUp_0.7s_ease-out_0.24s_both]"
+            >
+              <span className="bg-white rounded-sm p-2">
+                <GoogleIcon />
+              </span>
+              {loading ? "Signing in…" : "Continue with Google"}
+            </button>
+
+            {error && (
+              <p className="text-[#D9534F] text-sm font-[IBM_Plex_Mono,monospace] mt-4">
+                error: {error}
+              </p>
+            )}
+            <p className="text-black/40 text-xs font-[IBM_Plex_Mono,monospace] mt-5 tracking-tight motion-safe:animate-[fadeUp_0.7s_ease-out_0.3s_both]">
+              {AGENTS.length} agents · 99.98% uptime · no credit card · ready in
+              &lt;60s
+            </p>
+          </div>
+
+          {/* Signature element: live agent process monitor — glassmorphic */}
+          <div className="relative">
+            {/* ambient light behind the glass */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-10 -z-10 motion-safe:animate-[drift_9s_ease-in-out_infinite]"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 20%, rgba(30,122,86,0.20), transparent 55%), radial-gradient(circle at 80% 80%, rgba(196,138,52,0.16), transparent 55%)",
+                filter: "blur(40px)",
+              }}
+            />
+
+            <div className="relative rounded-2xl border border-white/70 glass-panel shadow-[0_20px_60px_-12px_rgba(20,21,26,0.18)] overflow-hidden motion-safe:animate-[riseIn_0.9s_cubic-bezier(0.16,1,0.3,1)_both]">
+              {/* top glass edge highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+
+              <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/50 bg-white/25">
+                <div className="flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/50">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_1.6s_ease-in-out_infinite]" />
+                  AGENT_MONITOR · LIVE
+                </div>
+                <span className="font-[IBM_Plex_Mono,monospace] text-xs text-black/35 tabular-nums">
+                  {clock}
+                </span>
+
+                {/* sheen sweep across header */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 overflow-hidden"
+                >
+                  <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-[sheen_5s_ease-in-out_infinite]" />
+                </div>
+              </div>
+
+              <div>
+                {AGENTS.map((agent, i) => {
+                  const s = STATUS_STYLES[agent.status];
+                  return (
+                    <div
+                      key={agent.name}
+                      className={`glass-row px-4 py-3.5 flex items-center gap-3 motion-safe:animate-[fadeUp_0.6s_ease-out_both] ${
+                        i !== AGENTS.length - 1
+                          ? "border-b border-white/40"
+                          : ""
+                      }`}
+                      style={{ animationDelay: `${0.25 + i * 0.1}s` }}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: s.dot }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2">
+                          <p className="font-[IBM_Plex_Mono,monospace] text-[12.5px] font-medium tracking-tight">
+                            {agent.name}
+                          </p>
+                          <span
+                            className={`font-[IBM_Plex_Mono,monospace] text-[10px] ${s.text}`}
+                          >
+                            {s.label}
+                          </span>
+                        </div>
+                        <p className="text-black/40 text-[12.5px] truncate mt-0.5">
+                          {agent.task}
+                        </p>
+                      </div>
+
+                      {/* mini activity bars */}
+                      <div className="hidden sm:flex items-end gap-[3px] h-4 shrink-0">
+                        {[0, 1, 2, 3].map((b) => (
+                          <span
+                            key={b}
+                            className="w-[3px] h-full rounded-full origin-bottom"
+                            style={{
+                              background:
+                                agent.status === "idle" ? "#14151A22" : s.dot,
+                              animation:
+                                agent.status === "idle"
+                                  ? "none"
+                                  : `eq ${0.9 + b * 0.15}s ease-in-out infinite`,
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      <span className="hidden sm:inline font-[IBM_Plex_Mono,monospace] text-[11px] text-black/30 tabular-nums w-16 text-right shrink-0">
+                        0x{ids[i]}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="relative px-4 py-2.5 border-t border-white/50 bg-white/25 font-[IBM_Plex_Mono,monospace] text-[11px] text-black/35 flex items-center justify-between">
+                <span>{AGENTS.length} processes · shared context bus</span>
+                <span>core.vortex.ai</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Agents / features */}
+        <section
+          id="agents"
+          className="max-w-6xl mx-auto px-6 py-24 border-t border-black/[0.07]"
+        >
+          <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-3">
+            Every agent has a job.
+          </h2>
+          <p className="text-black/50 max-w-xl mb-6 text-lg">
+            Define the roster once. Vortex routes tasks to the right agent and
+            hands off context automatically between them.
+          </p>
+
+          <div className="inline-flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/45 bg-black/[0.025] border border-black/[0.08] rounded-md px-3 py-1.5 mb-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_1.6s_ease-in-out_infinite]" />
+            <TypeLine
+              text={`vortex ps --agents=${AGENTS.length}`}
+              startDelay={200}
+              className="text-black/55"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-px bg-black/[0.07] border border-black/[0.07] rounded-lg overflow-hidden">
+            {FEATURES.map((f, i) => (
+              <FeatureCard
+                key={f.proc}
+                proc={f.proc}
+                title={f.title}
+                text={f.text}
+                cmd={f.cmd}
+                delay={500 + i * 350}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section id="how" className="border-t border-black/[0.07] bg-white/60">
+          <div className="max-w-6xl mx-auto px-6 py-24">
+            <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-4">
+              How a task moves through the pipeline
+            </h2>
+            <div className="inline-flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/45 bg-black/[0.025] border border-black/[0.08] rounded-md px-3 py-1.5 mb-16">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_1.6s_ease-in-out_infinite]" />
+              <TypeLine
+                text="vortex trace --pipeline --follow"
+                startDelay={200}
+                className="text-black/55"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-8 relative">
+              {/* base line */}
+              <div className="hidden md:block absolute top-[9px] left-0 right-0 h-px bg-black/[0.09]" />
+              {/* scanning trace */}
+              <div className="hidden md:block absolute top-[9px] left-0 right-0 h-px bg-[#1E7A56] origin-left motion-safe:animate-[lineScan_5s_ease-in-out_infinite]" />
+
+              {PIPELINE_STEPS.map((step, i) => (
+                <Step
+                  key={step.n}
+                  n={step.n}
+                  title={step.title}
+                  text={step.text}
+                  delay={i * (5000 / PIPELINE_STEPS.length)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Capabilities strip — what actually earns trust in an agent platform */}
+        <section className="border-t border-black/[0.07]">
+          <div className="max-w-6xl mx-auto px-6 py-20">
+            <p className="font-[IBM_Plex_Mono,monospace] text-xs text-black/40 uppercase tracking-wide mb-10">
+              Built to be trusted with real work
+            </p>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-px bg-black/[0.07] border border-black/[0.07] rounded-lg overflow-hidden">
+              {CAPABILITIES.map((c) => (
+                <div
+                  key={c.title}
+                  className="bg-white p-6 transition-all duration-300 ease-out hover:bg-[#FBFAF7] hover:-translate-y-1 hover:shadow-[0_12px_32px_-8px_rgba(20,21,26,0.12)] hover:z-10 relative"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <CapIcon name={c.icon} />
+                    <span className="font-[IBM_Plex_Mono,monospace] text-[10px] text-[#1E7A56] tracking-wide">
+                      {c.tag}
+                    </span>
+                  </div>
+                  <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-[15px] mb-1.5">
+                    {c.title}
+                  </h3>
+                  <p className="text-black/45 text-[13px] leading-relaxed">
+                    {c.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-black/[0.07] py-8">
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-black/40 font-[IBM_Plex_Mono,monospace]">
+          <span>© {new Date().getFullYear()} Vortex AI</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56]" />
+            all systems normal
+          </span>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
-export default LandingPage;
+function FeatureCard({ proc, title, text, cmd, delay = 0 }) {
+  return (
+    <div className="bg-white p-7 transition-all duration-300 ease-out hover:bg-[#FBFAF7] hover:-translate-y-1 hover:shadow-[0_12px_32px_-8px_rgba(20,21,26,0.12)] hover:z-10 relative">
+      <div className="flex items-center justify-between mb-3">
+        <span className="font-[IBM_Plex_Mono,monospace] text-xs font-medium text-[#1E7A56]">
+          {proc}
+        </span>
+        <BinaryTicker className="font-[IBM_Plex_Mono,monospace] text-[10px] text-black/25 tabular-nums" />
+      </div>
+      <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mb-2">
+        {title}
+      </h3>
+      <p className="text-black/45 text-sm leading-relaxed mb-4">{text}</p>
+      <div className="pt-3 border-t border-black/[0.06] font-[IBM_Plex_Mono,monospace] text-[11px] text-black/35">
+        <TypeLine text={`$ ${cmd}`} startDelay={delay} />
+      </div>
+    </div>
+  );
+}
+
+function Step({ n, title, text, delay = 0 }) {
+  return (
+    <div className="relative pt-6">
+      <span
+        className="absolute top-0 left-0 w-[9px] h-[9px] rounded-full border-2 motion-safe:animate-[dotLive_5s_ease-in-out_infinite]"
+        style={{ animationDelay: `${delay}ms` }}
+      />
+      <div className="flex items-center gap-2 mb-2">
+        <span className="font-[IBM_Plex_Mono,monospace] text-xs font-semibold text-black/35">
+          {n}
+        </span>
+        <BinaryTicker
+          className="font-[IBM_Plex_Mono,monospace] text-[10px] text-black/20 tabular-nums"
+          bits={4}
+          interval={550}
+        />
+      </div>
+      <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mb-2">
+        {title}
+      </h3>
+      <p className="text-black/45 text-sm leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
+function GoogleIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.98v2.33A9 9 0 0 0 9 18z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.05l2.99-2.33z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.95l2.99 2.33C4.68 5.16 6.66 3.58 9 3.58z"
+      />
+    </svg>
+  );
+}
+
+export default Login;
