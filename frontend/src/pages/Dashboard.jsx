@@ -1,12 +1,10 @@
 
-
 // import React, { useState, useRef, useEffect } from "react";
 
 // const AGENTS = [
-//   { id: "researcher", label: "Researcher", color: "#6E6FEA", role: "gathers context" },
-//   { id: "planner", label: "Planner", color: "#4FD1C5", role: "breaks down tasks" },
-//   { id: "coder", label: "Coder", color: "#F0B45E", role: "writes & tests" },
-//   { id: "reviewer", label: "Reviewer", color: "#F0729A", role: "checks output" },
+//   { id: "researcher", label: "RESEARCHER", code: "RE", color: "#1E7A56", role: "gathers context" },
+//   { id: "coder", label: "CODER", code: "CO", color: "#34506B", role: "writes & tests" },
+//   { id: "reviewer", label: "REVIEWER", code: "RV", color: "#B3503F", role: "checks output" },
 // ];
 
 // const MODES = [
@@ -28,8 +26,199 @@
 // const RECENT_SESSIONS = [
 //   { id: 1, title: "Build a LangGraph agent", agent: "coder", time: "2h ago" },
 //   { id: 2, title: "Summarize Q3 research", agent: "researcher", time: "1d ago" },
-//   { id: 3, title: "Plan sprint breakdown", agent: "planner", time: "2d ago" },
+//   { id: 3, title: "Review PR #482", agent: "reviewer", time: "2d ago" },
 // ];
+
+// /* ---------- shared engineering-theme primitives (match Login.jsx) ---------- */
+
+// function TypeLine({ text, startDelay = 0, speed = 26, className = "", cursor = true }) {
+//   const [count, setCount] = useState(0);
+//   useEffect(() => {
+//     let interval;
+//     setCount(0);
+//     const timeout = setTimeout(() => {
+//       let i = 0;
+//       interval = setInterval(() => {
+//         i += 1;
+//         setCount(i);
+//         if (i >= text.length) clearInterval(interval);
+//       }, speed);
+//     }, startDelay);
+//     return () => {
+//       clearTimeout(timeout);
+//       clearInterval(interval);
+//     };
+//   }, [text, startDelay, speed]);
+//   return (
+//     <span className={className}>
+//       {text.slice(0, count)}
+//       {cursor && (
+//         <span className="inline-block w-[6px] h-[11px] bg-current ml-0.5 align-middle motion-safe:animate-[blink_0.9s_step-end_infinite]" />
+//       )}
+//     </span>
+//   );
+// }
+
+// function BinaryTicker({ className = "", bits = 6, interval = 700 }) {
+//   const [val, setVal] = useState(() =>
+//     Array.from({ length: bits }, () => (Math.random() > 0.5 ? 1 : 0)).join(""),
+//   );
+//   useEffect(() => {
+//     const id = setInterval(() => {
+//       setVal(Array.from({ length: bits }, () => (Math.random() > 0.5 ? 1 : 0)).join(""));
+//     }, interval);
+//     return () => clearInterval(id);
+//   }, [bits, interval]);
+//   return <span className={className}>{val}</span>;
+// }
+
+// function hexId() {
+//   return Array.from(
+//     { length: 8 },
+//     () => "0123456789ABCDEF"[Math.floor(Math.random() * 16)],
+//   ).join("");
+// }
+
+// function BinaryColumn({ className }) {
+//   const [rows, setRows] = useState(() =>
+//     Array.from({ length: 24 }, () =>
+//       Array.from({ length: 6 }, () => (Math.random() > 0.5 ? 1 : 0)).join(""),
+//     ),
+//   );
+//   useEffect(() => {
+//     const id = setInterval(() => {
+//       setRows((prev) => {
+//         const next = [...prev];
+//         const i = Math.floor(Math.random() * next.length);
+//         next[i] = Array.from({ length: 6 }, () => (Math.random() > 0.5 ? 1 : 0)).join("");
+//         return next;
+//       });
+//     }, 900);
+//     return () => clearInterval(id);
+//   }, []);
+//   return (
+//     <div
+//       aria-hidden="true"
+//       className={`font-mono text-[10px] leading-[1.7] text-[#14151A] select-none pointer-events-none ${className}`}
+//     >
+//       {rows.map((r, i) => (
+//         <div key={i}>{r}</div>
+//       ))}
+//     </div>
+//   );
+// }
+
+// function BrandMark({ size = "text-lg" }) {
+//   return (
+//     <span className={`font-[Space_Grotesk,sans-serif] ${size} font-semibold tracking-tight flex items-center gap-2 shrink-0`}>
+//       <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite]" />
+//       VORTEX
+//       <span className="text-black/35 font-mono text-xs font-normal tracking-normal">/ai</span>
+//     </span>
+//   );
+// }
+
+// /* ---------- agent checkpoint pipeline — the signature center animation ---------- */
+
+// function CheckpointPipeline() {
+//   return (
+//     <div className="relative w-full max-w-md mx-auto motion-safe:animate-[riseIn_0.7s_cubic-bezier(0.16,1,0.3,1)_both]">
+//       <svg viewBox="0 0 480 170" className="w-full h-auto overflow-visible">
+//         <defs>
+//           <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+//             <stop offset="0%" stopColor="#1E7A56" />
+//             <stop offset="50%" stopColor="#34506B" />
+//             <stop offset="100%" stopColor="#B3503F" />
+//           </linearGradient>
+//           <radialGradient id="pulseGlow" cx="50%" cy="50%" r="50%">
+//             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+//             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+//           </radialGradient>
+//         </defs>
+
+//         {/* static structural line */}
+//         <line x1="70" y1="70" x2="410" y2="70" stroke="#14151A" strokeOpacity="0.08" strokeWidth="1.5" />
+
+//         {/* animated data-flow line */}
+//         <path
+//           d="M70,70 L410,70"
+//           fill="none"
+//           stroke="url(#flowGradient)"
+//           strokeWidth="1.5"
+//           strokeDasharray="5 7"
+//           strokeOpacity="0.55"
+//         >
+//           <animate attributeName="stroke-dashoffset" from="0" to="-48" dur="2.4s" repeatCount="indefinite" />
+//         </path>
+
+//         {/* traveling checkpoint packet */}
+//         <g>
+//           <animateMotion
+//             path="M70,70 L410,70"
+//             keyPoints="0;0;0.5;0.5;1;1"
+//             keyTimes="0;0.18;0.36;0.54;0.72;1"
+//             dur="6s"
+//             repeatCount="indefinite"
+//             calcMode="linear"
+//           />
+//           <circle r="16" fill="url(#pulseGlow)" />
+//           <circle r="4.5" fill="#14151A" />
+//         </g>
+
+//         {/* checkpoint nodes */}
+//         {AGENTS.map((a, i) => {
+//           const x = 70 + i * 170;
+//           return (
+//             <g key={a.id} className={`checkpoint-node checkpoint-node-${i}`} style={{ transformOrigin: `${x}px 70px` }}>
+//               <circle cx={x} cy="70" r="26" fill="rgba(255,255,255,0.7)" stroke={a.color} strokeWidth="1.5" />
+//               <circle cx={x} cy="70" r="26" fill="none" stroke={a.color} strokeWidth="1.5" className={`checkpoint-ring checkpoint-ring-${i}`} />
+//               <text
+//                 x={x}
+//                 y="75"
+//                 textAnchor="middle"
+//                 fill={a.color}
+//                 fontSize="12"
+//                 fontWeight="600"
+//                 style={{ fontFamily: "IBM Plex Mono, monospace" }}
+//               >
+//                 {a.code}
+//               </text>
+//               <text
+//                 x={x}
+//                 y="118"
+//                 textAnchor="middle"
+//                 fill="#14151A"
+//                 fillOpacity="0.4"
+//                 fontSize="10.5"
+//                 letterSpacing="0.5"
+//                 style={{ fontFamily: "IBM Plex Mono, monospace" }}
+//               >
+//                 {a.label}
+//               </text>
+//             </g>
+//           );
+//         })}
+//       </svg>
+
+//       {/* cycling stage badge */}
+//       <div className="flex justify-center mt-2">
+//         <div className="relative h-6 font-[IBM_Plex_Mono,monospace] text-[11px] tracking-wide">
+//           {AGENTS.map((a, i) => (
+//             <span
+//               key={a.id}
+//               className={`absolute inset-0 flex items-center justify-center whitespace-nowrap stage-label stage-label-${i}`}
+//               style={{ color: a.color }}
+//             >
+//               stage: {a.label.toLowerCase()}
+//             </span>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// /* ---------------------------------------------------------------------- */
 
 // function Dashboard() {
 //   const [mode, setMode] = useState("auto");
@@ -38,11 +227,39 @@
 //   const [activeAgent, setActiveAgent] = useState(null);
 //   const [thinking, setThinking] = useState(false);
 //   const [activityLog, setActivityLog] = useState([]);
+//   const [clock, setClock] = useState("");
+//   const [ids, setIds] = useState(() => AGENTS.map(() => hexId()));
 //   const scrollRef = useRef(null);
 
 //   useEffect(() => {
 //     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
 //   }, [messages, thinking]);
+
+//   useEffect(() => {
+//     const tick = () =>
+//       setClock(
+//         new Date().toLocaleTimeString("en-US", {
+//           hour12: false,
+//           hour: "2-digit",
+//           minute: "2-digit",
+//           second: "2-digit",
+//         }),
+//       );
+//     tick();
+//     const clockId = setInterval(tick, 1000);
+//     const idId = setInterval(() => {
+//       setIds((prev) => {
+//         const next = [...prev];
+//         const i = Math.floor(Math.random() * next.length);
+//         next[i] = hexId();
+//         return next;
+//       });
+//     }, 1600);
+//     return () => {
+//       clearInterval(clockId);
+//       clearInterval(idId);
+//     };
+//   }, []);
 
 //   const send = (text) => {
 //     const content = (text ?? input).trim();
@@ -53,37 +270,112 @@
 //     setInput("");
 //     setThinking(true);
 //     setActiveAgent(agent.id);
-//     setActivityLog((log) => [
-//       { id: Date.now(), agent, text: `Received task`, time: "now" },
-//       ...log,
-//     ].slice(0, 6));
+//     setActivityLog((log) =>
+//       [{ id: Date.now(), agent, text: `received task`, time: "now" }, ...log].slice(0, 6),
+//     );
 
 //     setTimeout(() => {
 //       setMessages((m) => [
 //         ...m,
 //         { role: "agent", agent, content: `Routed "${content}" to ${agent.label.toLowerCase()} — task complete.` },
 //       ]);
-//       setActivityLog((log) => [
-//         { id: Date.now() + 1, agent, text: `Completed task`, time: "now" },
-//         ...log,
-//       ].slice(0, 6));
+//       setActivityLog((log) =>
+//         [{ id: Date.now() + 1, agent, text: `completed task`, time: "now" }, ...log].slice(0, 6),
+//       );
 //       setThinking(false);
 //       setActiveAgent(null);
 //     }, 1400);
 //   };
 
 //   return (
-//     <div className="h-screen flex bg-[#FAF9F6] text-[#1C1B1F] font-[Inter,sans-serif] overflow-hidden">
+//     <div className="h-screen flex bg-[#F7F6F2] text-[#14151A] font-[Inter,sans-serif] antialiased overflow-hidden">
+//       {/* Faint engineering grid, same as login */}
+//       <div
+//         aria-hidden="true"
+//         className="pointer-events-none fixed inset-0 -z-10 opacity-[0.4]"
+//         style={{
+//           backgroundImage: "radial-gradient(rgba(20,21,26,0.09) 1px, transparent 1px)",
+//           backgroundSize: "26px 26px",
+//         }}
+//       />
+
 //       <style>{`
-//         @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1);} 50% { opacity: .4; transform: scale(1.3);} }
-//         @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-//         .msg-in { animation: rise .35s ease both; }
+//         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+//         @keyframes eq {
+//           0%, 100% { transform: scaleY(0.3); }
+//           50% { transform: scaleY(1); }
+//         }
+//         @keyframes riseIn {
+//           from { opacity: 0; transform: translateY(18px) scale(0.985); }
+//           to   { opacity: 1; transform: translateY(0) scale(1); }
+//         }
+//         @keyframes fadeUp {
+//           from { opacity: 0; transform: translateY(10px); }
+//           to   { opacity: 1; transform: translateY(0); }
+//         }
+//         @keyframes sheen {
+//           0% { transform: translateX(-120%) skewX(-12deg); }
+//           100% { transform: translateX(220%) skewX(-12deg); }
+//         }
+//         @keyframes pulseDot {
+//           0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(30,122,86,0.25); }
+//           50% { opacity: 0.5; transform: scale(1.25); box-shadow: 0 0 0 4px rgba(30,122,86,0); }
+//         }
+//         .glass-panel {
+//           background: rgba(255,255,255,0.55);
+//           backdrop-filter: blur(24px);
+//           -webkit-backdrop-filter: blur(24px);
+//         }
+//         .glass-row { transition: background 0.35s ease, transform 0.35s ease; }
+//         .glass-row:hover { background: rgba(255,255,255,0.5); transform: translateX(2px); }
+//         .no-scrollbar::-webkit-scrollbar { display: none; }
+//         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+//         /* checkpoint pipeline node pulses — timed to match the packet's arrival */
+//         @keyframes ringPulse {
+//           0% { r: 26; stroke-opacity: 0.9; stroke-width: 1.5; }
+//           10% { r: 34; stroke-opacity: 0; stroke-width: 3; }
+//           100% { r: 34; stroke-opacity: 0; stroke-width: 3; }
+//         }
+//         .checkpoint-ring { animation: ringPulse 6s ease-out infinite; }
+//         .checkpoint-ring-0 { animation-delay: 0s; }
+//         .checkpoint-ring-1 { animation-delay: 2.16s; }
+//         .checkpoint-ring-2 { animation-delay: 4.32s; }
+
+//         @keyframes nodeScale {
+//           0% { transform: scale(1); }
+//           8% { transform: scale(1.12); }
+//           20% { transform: scale(1); }
+//           100% { transform: scale(1); }
+//         }
+//         .checkpoint-node { animation: nodeScale 6s ease-out infinite; }
+//         .checkpoint-node-0 { animation-delay: 0s; }
+//         .checkpoint-node-1 { animation-delay: 2.16s; }
+//         .checkpoint-node-2 { animation-delay: 4.32s; }
+
+//         @keyframes stageFade0 {
+//           0%, 15% { opacity: 1; }
+//           20%, 100% { opacity: 0; }
+//         }
+//         @keyframes stageFade1 {
+//           0%, 33% { opacity: 0; }
+//           38%, 51% { opacity: 1; }
+//           56%, 100% { opacity: 0; }
+//         }
+//         @keyframes stageFade2 {
+//           0%, 69% { opacity: 0; }
+//           74%, 100% { opacity: 1; }
+//         }
+//         .stage-label-0 { animation: stageFade0 6s ease-in-out infinite; }
+//         .stage-label-1 { animation: stageFade1 6s ease-in-out infinite; }
+//         .stage-label-2 { animation: stageFade2 6s ease-in-out infinite; }
 //       `}</style>
 
 //       {/* Icon rail */}
-//       <aside className="w-16 shrink-0 border-r border-black/[0.06] bg-white/60 backdrop-blur-xl flex flex-col items-center py-5 gap-6">
-//         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6E6FEA] to-[#4FD1C5] flex items-center justify-center">
+//       <aside className="w-16 shrink-0 border-r border-black/[0.07] bg-white/50 backdrop-blur-xl flex flex-col items-center py-5 gap-6 z-10">
+//         <div className="w-9 h-9 rounded-md bg-[#14151A] flex items-center justify-center relative overflow-hidden">
 //           <span className="text-white text-xs font-[Space_Grotesk,sans-serif] font-bold">V</span>
+//           <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite] ring-2 ring-white" />
 //         </div>
 //         <nav className="flex flex-col items-center gap-1 mt-4">
 //           <RailIcon active label="Sessions"><ChatIcon /></RailIcon>
@@ -93,23 +385,28 @@
 //         </nav>
 //         <div className="mt-auto flex flex-col items-center gap-3">
 //           <RailIcon label="Settings"><SettingsIcon /></RailIcon>
-//           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6E6FEA] to-[#4FD1C5]" />
+//           <div className="w-8 h-8 rounded-full bg-[#14151A] flex items-center justify-center text-white text-[10px] font-[IBM_Plex_Mono,monospace]">
+//             0x
+//           </div>
 //         </div>
 //       </aside>
 
 //       {/* Sessions panel */}
-//       <aside className="w-64 shrink-0 border-r border-black/[0.06] bg-white/40 backdrop-blur-xl flex flex-col">
+//       <aside className="w-64 shrink-0 border-r border-black/[0.07] bg-white/35 backdrop-blur-xl flex flex-col z-10">
 //         <div className="p-4">
 //           <button
-//             onClick={() => { setMessages([]); setInput(""); }}
-//             className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1C1B1F] text-white text-sm font-medium py-2.5 hover:opacity-90 transition-opacity"
+//             onClick={() => {
+//               setMessages([]);
+//               setInput("");
+//             }}
+//             className="w-full flex items-center justify-center gap-2 rounded-md bg-[#14151A] text-white text-sm font-medium py-2.5 transition-colors duration-300 hover:bg-[#1E7A56]"
 //           >
 //             <PlusIcon /> New session
 //           </button>
 //         </div>
 //         <div className="px-4 flex-1 overflow-y-auto">
-//           <p className="text-[10px] font-[Space_Grotesk,sans-serif] font-semibold uppercase tracking-widest text-black/30 mb-2 mt-2">
-//             Recent
+//           <p className="text-[10px] font-[IBM_Plex_Mono,monospace] font-medium uppercase tracking-widest text-black/30 mb-2 mt-2">
+//             recent
 //           </p>
 //           <div className="space-y-1">
 //             {RECENT_SESSIONS.map((s) => {
@@ -117,28 +414,32 @@
 //               return (
 //                 <button
 //                   key={s.id}
-//                   className="w-full text-left rounded-lg px-3 py-2.5 hover:bg-white/70 transition-colors group"
+//                   className="w-full text-left rounded-md px-3 py-2.5 glass-row hover:bg-white/60 transition-colors group"
 //                 >
 //                   <p className="text-sm text-black/80 truncate group-hover:text-black">{s.title}</p>
 //                   <div className="flex items-center gap-1.5 mt-1">
 //                     <span className="w-1 h-1 rounded-full" style={{ background: agent.color }} />
-//                     <span className="text-[11px] text-black/35">{agent.label} · {s.time}</span>
+//                     <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35">
+//                       {agent.label.toLowerCase()} · {s.time}
+//                     </span>
 //                   </div>
 //                 </button>
 //               );
 //             })}
 //           </div>
 //         </div>
-//         <div className="p-4 border-t border-black/[0.06]">
-//           <div className="rounded-xl border border-black/[0.06] bg-white/70 p-3.5">
+//         <div className="p-4 border-t border-black/[0.07]">
+//           <div className="rounded-md border border-black/[0.07] bg-white/70 p-3.5">
 //             <div className="flex items-center justify-between mb-2">
 //               <span className="text-xs font-medium text-black/60">Free plan</span>
-//               <span className="text-[10px] font-[Space_Grotesk,sans-serif] text-[#6E6FEA]">12/100</span>
+//               <span className="text-[10px] font-[IBM_Plex_Mono,monospace] text-[#1E7A56] tabular-nums">
+//                 12/100
+//               </span>
 //             </div>
 //             <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
-//               <div className="h-full w-[12%] rounded-full bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5]" />
+//               <div className="h-full w-[12%] rounded-full bg-[#1E7A56]" />
 //             </div>
-//             <button className="w-full text-xs font-medium rounded-lg bg-[#1C1B1F] text-white py-2 mt-3 hover:opacity-90 transition-opacity">
+//             <button className="w-full text-xs font-medium rounded-md bg-[#14151A] text-white py-2 mt-3 transition-colors duration-300 hover:bg-[#1E7A56]">
 //               Upgrade
 //             </button>
 //           </div>
@@ -146,10 +447,20 @@
 //       </aside>
 
 //       {/* Main */}
-//       <div className="flex-1 flex flex-col min-w-0">
-//         <div className="h-14 border-b border-black/[0.06] flex items-center gap-4 px-6 bg-white/40 backdrop-blur-xl">
+//       <div className="flex-1 flex flex-col min-w-0 relative">
+//         <BinaryColumn className="hidden 2xl:block fixed top-24 left-[19rem] opacity-[0.045] -z-10" />
+
+//         <div className="h-14 border-b border-black/[0.07] flex items-center gap-4 px-6 bg-white/35 backdrop-blur-xl z-10">
+//           <BrandMark />
+//           <span className="w-px h-4 bg-black/10" />
 //           <p className="text-sm font-medium">{messages.length ? "Active session" : "New session"}</p>
-//           <span className="text-[11px] text-black/35">{messages.length} messages</span>
+//           <span className="w-1 h-1 rounded-full bg-black/20" />
+//           <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35">
+//             {messages.length} messages
+//           </span>
+//           <span className="ml-auto text-[11px] font-[IBM_Plex_Mono,monospace] text-black/30 tabular-nums hidden sm:inline">
+//             {clock}
+//           </span>
 //         </div>
 
 //         <div ref={scrollRef} className="flex-1 overflow-y-auto">
@@ -165,17 +476,17 @@
 //           )}
 //         </div>
 
-//         <div className="p-5 border-t border-black/[0.06] bg-white/30 backdrop-blur-xl">
+//         <div className="p-5 border-t border-black/[0.07] bg-white/25 backdrop-blur-xl z-10">
 //           <div className="max-w-2xl mx-auto">
 //             <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar">
 //               {MODES.map((m) => (
 //                 <button
 //                   key={m.id}
 //                   onClick={() => setMode(m.id)}
-//                   className={`shrink-0 text-xs font-medium rounded-full px-3.5 py-1.5 border transition-colors ${
+//                   className={`shrink-0 text-xs font-[IBM_Plex_Mono,monospace] font-medium rounded-md px-3.5 py-1.5 border transition-colors ${
 //                     mode === m.id
-//                       ? "bg-[#1C1B1F] border-transparent text-white"
-//                       : "border-black/10 text-black/45 hover:text-black hover:border-black/25"
+//                       ? "bg-[#14151A] border-transparent text-white"
+//                       : "border-black/15 text-black/45 hover:text-black hover:border-black/30"
 //                   }`}
 //                 >
 //                   {m.label}
@@ -183,7 +494,7 @@
 //               ))}
 //             </div>
 
-//             <div className="rounded-2xl border border-black/[0.08] bg-white shadow-[0_4px_20px_rgba(28,27,31,0.05)] px-4 py-3 focus-within:border-[#6E6FEA]/50 transition-colors">
+//             <div className="rounded-lg border border-black/[0.08] bg-white shadow-[0_4px_20px_rgba(20,21,26,0.05)] px-4 py-3 focus-within:border-[#1E7A56]/50 transition-colors">
 //               <textarea
 //                 value={input}
 //                 onChange={(e) => setInput(e.target.value)}
@@ -199,13 +510,17 @@
 //               />
 //               <div className="flex items-center justify-between mt-2">
 //                 <div className="flex items-center gap-3 text-black/35">
-//                   <button className="hover:text-black/70 transition-colors" aria-label="Attach file"><AttachIcon /></button>
-//                   <button className="hover:text-black/70 transition-colors" aria-label="Voice input"><MicIcon /></button>
+//                   <button className="hover:text-[#1E7A56] transition-colors" aria-label="Attach file">
+//                     <AttachIcon />
+//                   </button>
+//                   <button className="hover:text-[#1E7A56] transition-colors" aria-label="Voice input">
+//                     <MicIcon />
+//                   </button>
 //                 </div>
 //                 <button
 //                   onClick={() => send()}
 //                   disabled={!input.trim()}
-//                   className="rounded-full bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5] p-2 disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-[#6E6FEA]/25 transition-shadow"
+//                   className="rounded-md bg-[#14151A] p-2 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1E7A56] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(30,122,86,0.25)]"
 //                   aria-label="Send"
 //                 >
 //                   <SendIcon />
@@ -216,59 +531,126 @@
 //         </div>
 //       </div>
 
-//       {/* Right: live agent panel */}
-//       <aside className="w-80 shrink-0 border-l border-black/[0.06] bg-white/50 backdrop-blur-xl flex flex-col hidden lg:flex">
-//         <div className="p-5 border-b border-black/[0.06]">
-//           <h2 className="font-[Space_Grotesk,sans-serif] font-semibold text-sm">Agent roster</h2>
-//           <p className="text-[11px] text-black/35 mt-0.5">Live status</p>
-//         </div>
-
-//         <div className="p-4 space-y-2.5">
-//           {AGENTS.map((a) => (
-//             <div
-//               key={a.id}
-//               className="rounded-xl border border-black/[0.06] bg-white p-3.5 flex items-center gap-3"
-//             >
-//               <span
-//                 className="w-2 h-2 rounded-full shrink-0"
-//                 style={{
-//                   background: a.color,
-//                   animation: activeAgent === a.id ? "pulse-dot 1s ease-in-out infinite" : "none",
-//                   opacity: activeAgent === a.id ? 1 : 0.35,
-//                 }}
-//               />
-//               <div className="min-w-0">
-//                 <p className="text-sm font-medium truncate">{a.label}</p>
-//                 <p className="text-[11px] text-black/40 truncate">{a.role}</p>
-//               </div>
-//               <span className="ml-auto text-[10px] font-[Space_Grotesk,sans-serif] shrink-0" style={{ color: activeAgent === a.id ? a.color : "#00000040" }}>
-//                 {activeAgent === a.id ? "active" : "idle"}
-//               </span>
+//       {/* Right: live agent panel — glassmorphic monitor, same signature as login hero */}
+//       <aside className="w-80 shrink-0 border-l border-black/[0.07] hidden lg:flex flex-col relative z-10">
+//         <div
+//           aria-hidden="true"
+//           className="absolute -inset-10 -z-10 opacity-70"
+//           style={{
+//             background:
+//               "radial-gradient(circle at 30% 10%, rgba(30,122,86,0.14), transparent 55%), radial-gradient(circle at 80% 90%, rgba(196,138,52,0.12), transparent 55%)",
+//             filter: "blur(40px)",
+//           }}
+//         />
+//         <div className="glass-panel h-full flex flex-col border-l border-white/70">
+//           <div className="relative flex items-center justify-between px-4 py-3.5 border-b border-white/50 bg-white/25 overflow-hidden">
+//             <div className="flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/50">
+//               <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_1.6s_ease-in-out_infinite]" />
+//               AGENT_ROSTER · LIVE
 //             </div>
-//           ))}
-//         </div>
+//             <div
+//               aria-hidden="true"
+//               className="pointer-events-none absolute inset-0 overflow-hidden"
+//             >
+//               <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-[sheen_6s_ease-in-out_infinite]" />
+//             </div>
+//           </div>
 
-//         <div className="px-5 pt-2">
-//           <h3 className="text-[10px] font-[Space_Grotesk,sans-serif] font-semibold uppercase tracking-widest text-black/30 mb-3">
-//             Activity
-//           </h3>
-//         </div>
-//         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-3">
-//           {activityLog.length === 0 ? (
-//             <p className="text-[12px] text-black/30">No activity yet — send a task to see agents at work.</p>
-//           ) : (
-//             activityLog.map((e) => (
-//               <div key={e.id} className="flex gap-2.5 msg-in">
-//                 <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: e.agent.color }} />
-//                 <div className="min-w-0">
-//                   <p className="text-[12px] text-black/70">
-//                     <span className="font-medium" style={{ color: e.agent.color }}>{e.agent.label}</span> — {e.text}
-//                   </p>
-//                   <p className="text-[10px] text-black/30">{e.time}</p>
+//           <div>
+//             {AGENTS.map((a, i) => {
+//               const isActive = activeAgent === a.id;
+//               return (
+//                 <div
+//                   key={a.id}
+//                   className={`glass-row px-4 py-3.5 flex items-center gap-3 ${
+//                     i !== AGENTS.length - 1 ? "border-b border-white/40" : ""
+//                   }`}
+//                 >
+//                   <span
+//                     className="w-1.5 h-1.5 rounded-full shrink-0"
+//                     style={{
+//                       background: a.color,
+//                       opacity: isActive ? 1 : 0.3,
+//                       animation: isActive ? "pulseDot 1s ease-in-out infinite" : "none",
+//                     }}
+//                   />
+//                   <div className="min-w-0 flex-1">
+//                     <div className="flex items-baseline gap-2">
+//                       <p className="font-[IBM_Plex_Mono,monospace] text-[12.5px] font-medium tracking-tight">
+//                         {a.label}
+//                       </p>
+//                       <span
+//                         className="font-[IBM_Plex_Mono,monospace] text-[10px]"
+//                         style={{ color: isActive ? a.color : "rgba(20,21,26,0.35)" }}
+//                       >
+//                         {isActive ? "ACTIVE" : "IDLE"}
+//                       </span>
+//                     </div>
+//                     <p className="text-black/40 text-[12.5px] truncate mt-0.5">{a.role}</p>
+//                   </div>
+
+//                   <div className="hidden sm:flex items-end gap-[3px] h-4 shrink-0">
+//                     {[0, 1, 2, 3].map((b) => (
+//                       <span
+//                         key={b}
+//                         className="w-[3px] h-full rounded-full origin-bottom"
+//                         style={{
+//                           background: isActive ? a.color : "#14151A22",
+//                           animation: isActive
+//                             ? `eq ${0.9 + b * 0.15}s ease-in-out infinite`
+//                             : "none",
+//                         }}
+//                       />
+//                     ))}
+//                   </div>
+
+//                   <span className="hidden sm:inline font-[IBM_Plex_Mono,monospace] text-[11px] text-black/30 tabular-nums w-16 text-right shrink-0">
+//                     0x{ids[i]}
+//                   </span>
 //                 </div>
-//               </div>
-//             ))
-//           )}
+//               );
+//             })}
+//           </div>
+
+//           <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+//             <h3 className="text-[10px] font-[IBM_Plex_Mono,monospace] font-medium uppercase tracking-widest text-black/30">
+//               activity
+//             </h3>
+//             <BinaryTicker className="font-[IBM_Plex_Mono,monospace] text-[10px] text-black/25 tabular-nums" />
+//           </div>
+//           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+//             {activityLog.length === 0 ? (
+//               <p className="text-[12px] text-black/30 font-[IBM_Plex_Mono,monospace]">
+//                 no activity yet — send a task to see agents at work.
+//               </p>
+//             ) : (
+//               activityLog.map((e) => (
+//                 <div key={e.id} className="flex gap-2.5 motion-safe:animate-[fadeUp_0.4s_ease-out_both]">
+//                   <span
+//                     className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+//                     style={{ background: e.agent.color }}
+//                   />
+//                   <div className="min-w-0">
+//                     <p className="text-[12px] text-black/70">
+//                       <span
+//                         className="font-[IBM_Plex_Mono,monospace] font-medium"
+//                         style={{ color: e.agent.color }}
+//                       >
+//                         {e.agent.label}
+//                       </span>{" "}
+//                       — {e.text}
+//                     </p>
+//                     <p className="text-[10px] font-[IBM_Plex_Mono,monospace] text-black/30">{e.time}</p>
+//                   </div>
+//                 </div>
+//               ))
+//             )}
+//           </div>
+
+//           <div className="px-4 py-2.5 border-t border-white/50 bg-white/25 font-[IBM_Plex_Mono,monospace] text-[11px] text-black/35 flex items-center justify-between">
+//             <span>{AGENTS.length} processes · shared context bus</span>
+//             <span>core.vortex.ai</span>
+//           </div>
 //         </div>
 //       </aside>
 //     </div>
@@ -277,43 +659,35 @@
 
 // function EmptyState({ onSuggest }) {
 //   return (
-//     <div className="h-full flex flex-col items-center justify-center px-6">
-//       <div className="relative w-32 h-32 mb-8">
-//         <div className="absolute inset-0 rounded-full border border-black/[0.07]" />
-//         <div className="absolute inset-3 rounded-full border border-black/[0.05]" />
-//         <div
-//           className="absolute inset-[36%] rounded-full bg-gradient-to-br from-[#6E6FEA] to-[#4FD1C5]"
-//           style={{ boxShadow: "0 0 40px 6px rgba(110,111,234,0.25)" }}
-//         />
-//         {AGENTS.map((a, i) => {
-//           const angle = (i / AGENTS.length) * 2 * Math.PI - Math.PI / 2;
-//           const r = 58;
-//           return (
-//             <span
-//               key={a.id}
-//               className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full"
-//               style={{
-//                 background: a.color,
-//                 transform: `translate(${Math.cos(angle) * r}px, ${Math.sin(angle) * r}px)`,
-//               }}
-//             />
-//           );
-//         })}
-//       </div>
+//     <div className="h-full flex flex-col items-center justify-center px-6 relative">
+//       <BinaryColumn className="hidden xl:block absolute top-10 left-10 opacity-[0.05] -z-10" />
+//       <BinaryColumn className="hidden xl:block absolute top-10 right-10 opacity-[0.05] -z-10" />
 
-//       <h1 className="font-[Space_Grotesk,sans-serif] text-2xl font-semibold text-center">
+//       <span className="inline-flex items-center gap-2 text-[11px] font-[IBM_Plex_Mono,monospace] tracking-wide uppercase text-[#1E7A56] bg-[#1E7A56]/[0.06] border border-[#1E7A56]/20 rounded-md px-3 py-1.5 mb-8 motion-safe:animate-[fadeUp_0.5s_ease-out_both]">
+//         <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite]" />
+//         {AGENTS.length} agents standing by
+//       </span>
+
+//       <CheckpointPipeline />
+
+//       <h1 className="font-[Space_Grotesk,sans-serif] text-2xl font-semibold text-center mt-8">
 //         Your agents are standing by.
 //       </h1>
-//       <p className="text-black/40 text-sm mt-2 text-center max-w-sm">
-//         Describe an outcome — Vortex will route it to the right agent automatically.
+//       <p className="text-black/45 text-sm mt-2 text-center max-w-sm">
+//         Describe an outcome — Vortex will route it through research, code, and review automatically.
 //       </p>
+
+//       <div className="inline-flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/45 bg-black/[0.025] border border-black/[0.08] rounded-md px-3 py-1.5 mt-6">
+//         <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_1.6s_ease-in-out_infinite]" />
+//         <TypeLine text="vortex init --session" startDelay={200} className="text-black/55" />
+//       </div>
 
 //       <div className="flex flex-wrap gap-2.5 justify-center mt-8 max-w-lg">
 //         {SUGGESTIONS.map((s) => (
 //           <button
 //             key={s}
 //             onClick={() => onSuggest(s)}
-//             className="text-sm text-black/60 rounded-full border border-black/10 bg-white px-4 py-2 hover:border-[#6E6FEA]/40 hover:text-black transition-colors"
+//             className="text-sm text-black/60 rounded-md border border-black/10 bg-white px-4 py-2 transition-colors hover:border-[#1E7A56]/40 hover:text-black"
 //           >
 //             {s}
 //           </button>
@@ -326,23 +700,29 @@
 // function MessageBubble({ message }) {
 //   if (message.role === "user") {
 //     return (
-//       <div className="msg-in flex justify-end">
-//         <div className="max-w-[75%] rounded-2xl rounded-tr-sm bg-[#1C1B1F] text-white text-sm px-4 py-3">
+//       <div className="flex justify-end motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
+//         <div className="max-w-[75%] rounded-lg rounded-tr-sm bg-[#14151A] text-white text-sm px-4 py-3">
 //           {message.content}
 //         </div>
 //       </div>
 //     );
 //   }
 //   return (
-//     <div className="msg-in flex justify-start">
+//     <div className="flex justify-start motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
 //       <div className="max-w-[75%]">
 //         <div className="flex items-center gap-2 mb-1.5">
 //           <span className="w-1.5 h-1.5 rounded-full" style={{ background: message.agent.color }} />
-//           <span className="text-[11px] font-[Space_Grotesk,sans-serif] font-medium" style={{ color: message.agent.color }}>
+//           <span
+//             className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium"
+//             style={{ color: message.agent.color }}
+//           >
 //             {message.agent.label}
 //           </span>
+//           <span className="text-[10px] font-[IBM_Plex_Mono,monospace] text-black/25">
+//             0x{hexId()}
+//           </span>
 //         </div>
-//         <div className="rounded-2xl rounded-tl-sm border border-black/[0.07] bg-white text-sm px-4 py-3 text-black/80 shadow-[0_2px_10px_rgba(28,27,31,0.04)]">
+//         <div className="rounded-lg rounded-tl-sm border border-black/[0.07] bg-white text-sm px-4 py-3 text-black/80 shadow-[0_2px_10px_rgba(20,21,26,0.04)]">
 //           {message.content}
 //         </div>
 //       </div>
@@ -353,22 +733,31 @@
 // function ThinkingBubble({ agentId }) {
 //   const agent = AGENTS.find((a) => a.id === agentId) ?? AGENTS[0];
 //   return (
-//     <div className="msg-in flex justify-start">
+//     <div className="flex justify-start motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
 //       <div className="max-w-[75%]">
 //         <div className="flex items-center gap-2 mb-1.5">
-//           <span className="w-1.5 h-1.5 rounded-full" style={{ background: agent.color, animation: "pulse-dot 1s ease-in-out infinite" }} />
-//           <span className="text-[11px] font-[Space_Grotesk,sans-serif] font-medium" style={{ color: agent.color }}>
+//           <span
+//             className="w-1.5 h-1.5 rounded-full"
+//             style={{ background: agent.color, animation: "pulseDot 1s ease-in-out infinite" }}
+//           />
+//           <span
+//             className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium"
+//             style={{ color: agent.color }}
+//           >
 //             {agent.label} · working
 //           </span>
 //         </div>
-//         <div className="rounded-2xl rounded-tl-sm border border-black/[0.07] bg-white px-4 py-3.5 flex gap-1.5 shadow-[0_2px_10px_rgba(28,27,31,0.04)]">
-//           {[0, 1, 2].map((i) => (
-//             <span
-//               key={i}
-//               className="w-1.5 h-1.5 rounded-full bg-black/25"
-//               style={{ animation: `pulse-dot 1s ease-in-out ${i * 0.15}s infinite` }}
-//             />
-//           ))}
+//         <div className="rounded-lg rounded-tl-sm border border-black/[0.07] bg-white px-4 py-3.5 flex items-center gap-3 shadow-[0_2px_10px_rgba(20,21,26,0.04)]">
+//           <div className="flex gap-1.5">
+//             {[0, 1, 2].map((i) => (
+//               <span
+//                 key={i}
+//                 className="w-1.5 h-1.5 rounded-full bg-black/25"
+//                 style={{ animation: `pulseDot 1s ease-in-out ${i * 0.15}s infinite` }}
+//               />
+//             ))}
+//           </div>
+//           <BinaryTicker className="font-[IBM_Plex_Mono,monospace] text-[10px] text-black/25 tabular-nums" bits={5} interval={450} />
 //         </div>
 //       </div>
 //     </div>
@@ -379,8 +768,8 @@
 //   return (
 //     <button
 //       title={label}
-//       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-//         active ? "bg-[#6E6FEA]/10 text-[#6E6FEA]" : "text-black/35 hover:bg-black/[0.04] hover:text-black/70"
+//       className={`w-10 h-10 rounded-md flex items-center justify-center transition-colors ${
+//         active ? "bg-[#1E7A56]/10 text-[#1E7A56]" : "text-black/35 hover:bg-black/[0.04] hover:text-black/70"
 //       }`}
 //     >
 //       {children}
@@ -402,20 +791,12 @@
 // export default Dashboard;
 
 
-
-
-
-
-
-
-
 import React, { useState, useRef, useEffect } from "react";
 
 const AGENTS = [
-  { id: "researcher", label: "RESEARCHER", color: "#1E7A56", role: "gathers context" },
-  { id: "planner", label: "PLANNER", color: "#C48A34", role: "breaks down tasks" },
-  { id: "coder", label: "CODER", color: "#34506B", role: "writes & tests" },
-  { id: "reviewer", label: "REVIEWER", color: "#B3503F", role: "checks output" },
+  { id: "researcher", label: "RESEARCHER", code: "RE", color: "#1E7A56", role: "gathers context" },
+  { id: "coder", label: "CODER", code: "CO", color: "#34506B", role: "writes & tests" },
+  { id: "reviewer", label: "REVIEWER", code: "RV", color: "#B3503F", role: "checks output" },
 ];
 
 const MODES = [
@@ -437,7 +818,7 @@ const SUGGESTIONS = [
 const RECENT_SESSIONS = [
   { id: 1, title: "Build a LangGraph agent", agent: "coder", time: "2h ago" },
   { id: 2, title: "Summarize Q3 research", agent: "researcher", time: "1d ago" },
-  { id: 3, title: "Plan sprint breakdown", agent: "planner", time: "2d ago" },
+  { id: 3, title: "Review PR #482", agent: "reviewer", time: "2d ago" },
 ];
 
 /* ---------- shared engineering-theme primitives (match Login.jsx) ---------- */
@@ -515,6 +896,124 @@ function BinaryColumn({ className }) {
       {rows.map((r, i) => (
         <div key={i}>{r}</div>
       ))}
+    </div>
+  );
+}
+
+function BrandMark({ size = "text-lg" }) {
+  return (
+    <span className={`font-[Space_Grotesk,sans-serif] ${size} font-semibold tracking-tight flex items-center gap-2 shrink-0`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite]" />
+      VORTEX
+      <span className="text-black/35 font-mono text-xs font-normal tracking-normal">/ai</span>
+    </span>
+  );
+}
+
+/* ---------- agent checkpoint pipeline — the signature center animation ---------- */
+
+const CHECKPOINT_POS = [
+  { x: 60, y: 50 },   // researcher — top left
+  { x: 240, y: 168 }, // coder — the V's vertex
+  { x: 420, y: 50 },  // reviewer — top right
+];
+const V_PATH = `M${CHECKPOINT_POS[0].x},${CHECKPOINT_POS[0].y} L${CHECKPOINT_POS[1].x},${CHECKPOINT_POS[1].y} L${CHECKPOINT_POS[2].x},${CHECKPOINT_POS[2].y}`;
+
+function CheckpointPipeline() {
+  return (
+    <div className="relative w-full max-w-md mx-auto motion-safe:animate-[riseIn_0.7s_cubic-bezier(0.16,1,0.3,1)_both]">
+      <svg viewBox="0 0 480 230" className="w-full h-auto overflow-visible">
+        <defs>
+          <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1E7A56" />
+            <stop offset="50%" stopColor="#34506B" />
+            <stop offset="100%" stopColor="#B3503F" />
+          </linearGradient>
+          <radialGradient id="pulseGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* static structural V */}
+        <path d={V_PATH} fill="none" stroke="#14151A" strokeOpacity="0.08" strokeWidth="1.5" />
+
+        {/* animated data-flow V */}
+        <path
+          d={V_PATH}
+          fill="none"
+          stroke="url(#flowGradient)"
+          strokeWidth="1.5"
+          strokeDasharray="5 7"
+          strokeOpacity="0.55"
+        >
+          <animate attributeName="stroke-dashoffset" from="0" to="-48" dur="2.4s" repeatCount="indefinite" />
+        </path>
+
+        {/* traveling checkpoint packet — descends then climbs, tracing the V */}
+        <g>
+          <animateMotion
+            path={V_PATH}
+            keyPoints="0;0;0.5;0.5;1;1"
+            keyTimes="0;0.18;0.36;0.54;0.72;1"
+            dur="6s"
+            repeatCount="indefinite"
+            calcMode="linear"
+          />
+          <circle r="16" fill="url(#pulseGlow)" />
+          <circle r="4.5" fill="#14151A" />
+        </g>
+
+        {/* checkpoint nodes */}
+        {AGENTS.map((a, i) => {
+          const { x, y } = CHECKPOINT_POS[i];
+          const labelY = y > 120 ? y + 44 : y - 36;
+          return (
+            <g key={a.id} className={`checkpoint-node checkpoint-node-${i}`} style={{ transformOrigin: `${x}px ${y}px` }}>
+              <circle cx={x} cy={y} r="26" fill="rgba(255,255,255,0.7)" stroke={a.color} strokeWidth="1.5" />
+              <circle cx={x} cy={y} r="26" fill="none" stroke={a.color} strokeWidth="1.5" className={`checkpoint-ring checkpoint-ring-${i}`} />
+              <text
+                x={x}
+                y={y + 5}
+                textAnchor="middle"
+                fill={a.color}
+                fontSize="12"
+                fontWeight="600"
+                style={{ fontFamily: "IBM Plex Mono, monospace" }}
+              >
+                {a.code}
+              </text>
+              <text
+                x={x}
+                y={labelY}
+                textAnchor="middle"
+                fill="#14151A"
+                fillOpacity="0.4"
+                fontSize="10.5"
+                letterSpacing="0.5"
+                style={{ fontFamily: "IBM Plex Mono, monospace" }}
+              >
+                {a.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* cycling stage badge */}
+      <div className="flex justify-center mt-2">
+        <div className="relative h-6 font-[IBM_Plex_Mono,monospace] text-[11px] tracking-wide">
+          {AGENTS.map((a, i) => (
+            <span
+              key={a.id}
+              className={`absolute inset-0 flex items-center justify-center whitespace-nowrap stage-label stage-label-${i}`}
+              style={{ color: a.color }}
+            >
+              stage: {a.label.toLowerCase()}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -631,6 +1130,45 @@ function Dashboard() {
         .glass-row:hover { background: rgba(255,255,255,0.5); transform: translateX(2px); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* checkpoint pipeline node pulses — timed to match the packet's arrival */
+        @keyframes ringPulse {
+          0% { r: 26; stroke-opacity: 0.9; stroke-width: 1.5; }
+          10% { r: 34; stroke-opacity: 0; stroke-width: 3; }
+          100% { r: 34; stroke-opacity: 0; stroke-width: 3; }
+        }
+        .checkpoint-ring { animation: ringPulse 6s ease-out infinite; }
+        .checkpoint-ring-0 { animation-delay: 0s; }
+        .checkpoint-ring-1 { animation-delay: 2.16s; }
+        .checkpoint-ring-2 { animation-delay: 4.32s; }
+
+        @keyframes nodeScale {
+          0% { transform: scale(1); }
+          8% { transform: scale(1.12); }
+          20% { transform: scale(1); }
+          100% { transform: scale(1); }
+        }
+        .checkpoint-node { animation: nodeScale 6s ease-out infinite; }
+        .checkpoint-node-0 { animation-delay: 0s; }
+        .checkpoint-node-1 { animation-delay: 2.16s; }
+        .checkpoint-node-2 { animation-delay: 4.32s; }
+
+        @keyframes stageFade0 {
+          0%, 15% { opacity: 1; }
+          20%, 100% { opacity: 0; }
+        }
+        @keyframes stageFade1 {
+          0%, 33% { opacity: 0; }
+          38%, 51% { opacity: 1; }
+          56%, 100% { opacity: 0; }
+        }
+        @keyframes stageFade2 {
+          0%, 69% { opacity: 0; }
+          74%, 100% { opacity: 1; }
+        }
+        .stage-label-0 { animation: stageFade0 6s ease-in-out infinite; }
+        .stage-label-1 { animation: stageFade1 6s ease-in-out infinite; }
+        .stage-label-2 { animation: stageFade2 6s ease-in-out infinite; }
       `}</style>
 
       {/* Icon rail */}
@@ -713,6 +1251,8 @@ function Dashboard() {
         <BinaryColumn className="hidden 2xl:block fixed top-24 left-[19rem] opacity-[0.045] -z-10" />
 
         <div className="h-14 border-b border-black/[0.07] flex items-center gap-4 px-6 bg-white/35 backdrop-blur-xl z-10">
+          <BrandMark />
+          <span className="w-px h-4 bg-black/10" />
           <p className="text-sm font-medium">{messages.length ? "Active session" : "New session"}</p>
           <span className="w-1 h-1 rounded-full bg-black/20" />
           <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35">
@@ -928,37 +1468,13 @@ function EmptyState({ onSuggest }) {
         {AGENTS.length} agents standing by
       </span>
 
-      <div className="relative w-32 h-32 mb-8 motion-safe:animate-[riseIn_0.7s_cubic-bezier(0.16,1,0.3,1)_both]">
-        <div className="absolute inset-0 rounded-full border border-black/[0.09]" />
-        <div className="absolute inset-3 rounded-full border border-black/[0.06]" />
-        <div
-          className="absolute inset-[36%] rounded-full bg-[#14151A] flex items-center justify-center"
-          style={{ boxShadow: "0 0 40px 6px rgba(30,122,86,0.22)" }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2s_ease-in-out_infinite]" />
-        </div>
-        {AGENTS.map((a, i) => {
-          const angle = (i / AGENTS.length) * 2 * Math.PI - Math.PI / 2;
-          const r = 58;
-          return (
-            <span
-              key={a.id}
-              className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full"
-              style={{
-                background: a.color,
-                transform: `translate(${Math.cos(angle) * r}px, ${Math.sin(angle) * r}px)`,
-                animation: `blink ${2 + i * 0.3}s ease-in-out infinite`,
-              }}
-            />
-          );
-        })}
-      </div>
+      <CheckpointPipeline />
 
-      <h1 className="font-[Space_Grotesk,sans-serif] text-2xl font-semibold text-center">
+      <h1 className="font-[Space_Grotesk,sans-serif] text-2xl font-semibold text-center mt-8">
         Your agents are standing by.
       </h1>
       <p className="text-black/45 text-sm mt-2 text-center max-w-sm">
-        Describe an outcome — Vortex will route it to the right agent automatically.
+        Describe an outcome — Vortex will route it through research, code, and review automatically.
       </p>
 
       <div className="inline-flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-xs text-black/45 bg-black/[0.025] border border-black/[0.08] rounded-md px-3 py-1.5 mt-6">
@@ -1073,3 +1589,12 @@ function MicIcon() { return <svg width="17" height="17" viewBox="0 0 24 24" fill
 function SendIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>; }
 
 export default Dashboard;
+
+
+
+
+
+
+
+
+
