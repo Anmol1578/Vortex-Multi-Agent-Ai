@@ -5,7 +5,7 @@ import {
   saveMessage,
   getMessages,
   updateConversation
-} from "../controllers/chat.controller";
+} from "../controllers/chat.controller.js";
 
 const router = express.Router();
 
