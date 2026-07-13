@@ -583,7 +583,7 @@ function Login() {
   const handleLogin = async (token) => {
     try {
       const { data } = await api.post("/api/auth/login", { token });
-      console.log("Login response:", data);
+      dispatch(setUserdata(data))
       return data;
     } catch (error) {
       console.error(error);
@@ -607,7 +607,7 @@ function Login() {
         );
       }
 
-      dispatch(setUserdata(response.user)); // ← ONLY new line added
+      // dispatch(setUserdata(response.user)); // ← ONLY new line added
       navigate("/dashboard");
     } catch (error) {
       console.error("Google authentication failed:", error);
