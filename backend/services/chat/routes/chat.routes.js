@@ -1,0 +1,18 @@
+import express from "express";
+import {
+  createConversation,
+  getConversations,
+  saveMessage,
+  getMessages,
+  updateConversation
+} from "../controllers/chat.controller";
+
+const router = express.Router();
+
+router.get("/create-conversation", createConversation);
+router.get("/get-conversations", getConversations);
+router.post("/update-conversation", updateConversation);
+router.post("/save-message", saveMessage);
+router.post("/get-message/:conversationId",getMessages);
+
+export default router

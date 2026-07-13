@@ -30,7 +30,7 @@ export const createConversation = async (req, res) => {
     }
   };
 
-  export const updateConversations = async (req, res) => {
+  export const updateConversation = async (req, res) => {
     try {
       const { id, title } = req.body;
       const conversation = await Conversation.findbyIdAndUpdate(id, {
@@ -60,9 +60,8 @@ export const createConversation = async (req, res) => {
 
   export const getMessages = async (req, res) => {
     try {
-      const { conversationId } = req.body;
       const messages = await Message.fine({
-        conversationId,
+        conversationId:req.params.conversationId
       }).sort({ createdAt: -1 });
       return res.status(200).json(messages);
     } catch (error) {
