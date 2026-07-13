@@ -319,6 +319,8 @@ import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../../utils/firebase";
 import api from "../../utils/axios";
 import Dashboard from "./Dashboard";
+import { useSelector, useDispatch } from "react-redux";
+import { setUserdata } from "../redux/userSlice";
 
 const AGENTS = [
   { name: "RESEARCHER", task: "indexing source context", status: "active" },
@@ -567,6 +569,17 @@ function Login() {
     };
   }, []);
 
+
+  const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  //Show  User data in console
+
+  /*  useEffect(() => {
+  console.log(userData);
+}, [userData]);  */
+
+
   const handleLogin = async (token) => {
     try {
       const { data } = await api.post("/api/auth/login", { token });
@@ -594,6 +607,7 @@ function Login() {
         );
       }
 
+      dispatch(setUserdata(response.user)); // ← ONLY new line added
       navigate("/dashboard");
     } catch (error) {
       console.error("Google authentication failed:", error);
@@ -606,11 +620,49 @@ function Login() {
         );
       } else if (error.response?.status === 401) {
         setError("Authentication failed. Please sign in again.");
+      } else {
+        setError("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
     }
   };
+
+  // const googleLogin = async () => {
+  //   setError("");
+  //   setLoading(true);
+
+  //   try {
+  //     const result = await signInWithPopup(auth, googleProvider);
+  //     const token = await result.user.getIdToken();
+
+  //     const response = await handleLogin(token);
+
+  //     if (!response?.user) {
+  //       throw new Error(
+  //         "Authentication failed. User information was not returned.",
+  //       );
+  //     }
+
+  //     navigate("/dashboard");
+  //   } catch (error) {
+  //     console.error("Google authentication failed:", error);
+
+  //     if (error.code === "auth/popup-closed-by-user") {
+  //       setError("Sign-in was cancelled before completion.");
+  //     } else if (error.code === "auth/network-request-failed") {
+  //       setError(
+  //         "Network error. Please check your internet connection and try again.",
+  //       );
+  //     } else if (error.response?.status === 401) {
+  //       setError("Authentication failed. Please sign in again.");
+  //     } else {
+  //       setError("Something went wrong. Please try again.");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#14151A] font-[Inter,sans-serif] antialiased overflow-x-hidden">
