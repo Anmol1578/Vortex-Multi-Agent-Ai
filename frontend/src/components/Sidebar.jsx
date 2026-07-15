@@ -524,7 +524,7 @@ function Sidebar({ onNewSession }) {
     };
 
     getConv();
-  }, [dispatch , userData?._id]);
+  }, [dispatch, userData?._id]);
 
   const handleSelectConversation = (conversation) => {
     dispatch(setSelectedConversation(conversation));
