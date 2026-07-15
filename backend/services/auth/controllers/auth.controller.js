@@ -48,14 +48,34 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => { 
-try { 
-  const { session } = req.cookies?.session;
-  await redis.del(`session:${session}`);
-  res.clearCookie("session");
-  return res.status(200).json({ message: "Logout successful" });
+// export const logout = async (req, res) => { 
+// try { 
+//   const { session } = req.cookies?.session;
+//   await redis.del(`session:${session}`);
+//   res.clearCookie("session");
+//   return res.status(200).json({ message: "Logout successful" });
 
-} catch (error) {
-  res.status(500).json({ message: `Error logging out: ${error.message}` });
-} 
-}
+// } catch (error) {
+//   res.status(500).json({ message: `Error logging out: ${error.message}` });
+// } 
+// }
+
+export const logout = async (req, res) => {
+  try {
+    const session = req.cookies?.session;
+
+    if (session) {
+      await redis.del(`session:${session}`);
+    }
+
+    res.clearCookie("session", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: `Error logging out: ${error.message}` });
+  }
+};

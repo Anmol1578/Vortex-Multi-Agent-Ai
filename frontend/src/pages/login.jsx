@@ -1,332 +1,3 @@
-// import { signInWithPopup } from "firebase/auth";
-// import React from "react";
-// import { auth, googleProvider } from "../../utils/firebase";
-// import api from "../../utils/axios";
-
-// function LandingPage() {
-//   const handleLogin = async (token) => {
-//     try {
-//       const data = await api.post("/auth/login", { token });
-//       console.log("Login response:", data);
-//     } catch (error) {
-//       console.error("Error during login:", error);
-//     }
-//   };
-
-//   const googleLogin = async () => {
-//     try {
-//       const data = await signInWithPopup(auth, googleProvider);
-
-//       const token = await data.user.getIdToken();
-//       console.log("Token:", token);
-//       await handleLogin(token);
-
-//       console.log("Google login successful:", data);
-//     } catch (error) {
-//       console.error("Error signing in with Google:", error);
-//     }
-//   };
-
-//   return <div> Login
-
-//   </div>;
-// }
-
-// export default LandingPage;
-
-// import { signInWithPopup } from "firebase/auth";
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { auth, googleProvider } from "../../utils/firebase";
-// import api from "../../utils/axios";
-
-// const AGENTS = [
-//   { label: "Researcher", detail: "gathers context", color: "#6E6FEA" },
-//   { label: "Planner", detail: "breaks down tasks", color: "#4FD1C5" },
-//   { label: "Coder", detail: "writes & tests", color: "#F0B45E" },
-//   { label: "Reviewer", detail: "checks output", color: "#F0729A" },
-// ];
-
-// const ORBIT_RADIUS = 150;
-// const orbitPositions = AGENTS.map((_, i) => {
-//   const angle = (i / AGENTS.length) * 2 * Math.PI - Math.PI / 2;
-//   return {
-//     x: Math.cos(angle) * ORBIT_RADIUS,
-//     y: Math.sin(angle) * ORBIT_RADIUS,
-//   };
-// });
-
-// const STATS = [
-//   { value: "4", label: "specialized agents" },
-//   { value: "12k+", label: "tasks completed" },
-//   { value: "99.9%", label: "uptime" },
-//   { value: "<1min", label: "to get started" },
-// ];
-
-// function Login() {
-//   const navigate = useNavigate();
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-
-//   const handleLogin = async (token) => {
-//     try {
-//       const data = await api.post("/auth/login", { token });
-//       console.log("Login response:", data);
-//     } catch (error) {
-//       console.error("Error during login:", error);
-//       throw error;
-//     }
-//   };
-
-//   const googleLogin = async () => {
-//     setError("");
-//     setLoading(true);
-//     try {
-//       const data = await signInWithPopup(auth, googleProvider);
-//       const token = await data.user.getIdToken();
-//       await handleLogin(token);
-//       navigate("/dashboard");
-//     } catch (error) {
-//       console.error("Error signing in with Google:", error);
-//       setError("Couldn't sign you in. Please try again.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-[#FAF9F6] text-[#1C1B1F] font-[Inter,sans-serif] antialiased overflow-x-hidden">
-//       {/* Ambient gradient mesh */}
-//       <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-//         <div className="absolute -top-32 left-1/4 w-[560px] h-[560px] rounded-full bg-[#6E6FEA]/12 blur-[130px]" />
-//         <div className="absolute top-1/3 -right-32 w-[480px] h-[480px] rounded-full bg-[#4FD1C5]/12 blur-[120px]" />
-//         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-[#F0B45E]/8 blur-[110px]" />
-//       </div>
-
-//       <style>{`
-//         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-//         @keyframes spin-slow-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-//         @keyframes pulse-core {
-//           0%, 100% { box-shadow: 0 0 40px 4px rgba(110,111,234,0.25); }
-//           50% { box-shadow: 0 0 55px 10px rgba(79,209,197,0.25); }
-//         }
-//       `}</style>
-
-//       {/* Header */}
-//       <header className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF9F6]/75 border-b border-black/[0.05]">
-//         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-//           <span className="font-[Space_Grotesk,sans-serif] text-xl font-semibold tracking-tight">
-//             Vortex <span className="bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5] bg-clip-text text-transparent">AI</span>
-//           </span>
-//           <nav className="hidden md:flex items-center gap-9 text-sm text-black/50">
-//             <a href="#agents" className="hover:text-black transition-colors">Agents</a>
-//             <a href="#how" className="hover:text-black transition-colors">Pipeline</a>
-//             <a href="#faq" className="hover:text-black transition-colors">Docs</a>
-//           </nav>
-//           <button
-//             onClick={googleLogin}
-//             disabled={loading}
-//             className="inline-flex items-center gap-2 text-sm font-medium rounded-full pl-1.5 pr-4 py-1.5 border border-black/10 hover:border-black/20 hover:bg-black/[0.02] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-//           >
-//             <span className="bg-white rounded-full p-1 shadow-sm">
-//               <GoogleIcon size={14} />
-//             </span>
-//             {loading ? "Signing in…" : "Sign in"}
-//           </button>
-//         </div>
-//       </header>
-
-//       <main>
-//         {/* Hero */}
-//         <section className="max-w-6xl mx-auto px-6 pt-20 md:pt-24 pb-28 grid md:grid-cols-2 gap-16 items-center">
-//           <div>
-//             <span className="inline-flex items-center gap-2 text-xs font-medium tracking-wide uppercase text-[#6B5FD9] bg-[#6E6FEA]/8 border border-[#6E6FEA]/15 rounded-full px-3 py-1.5 mb-6">
-//               <span className="w-1.5 h-1.5 rounded-full bg-[#6E6FEA]" />
-//               Multi-agent AI platform
-//             </span>
-
-//             <h1 className="font-[Space_Grotesk,sans-serif] text-5xl md:text-6xl font-semibold leading-[1.05] tracking-tight mb-6">
-//               Agents that pull
-//               <br />
-//               <span className="bg-gradient-to-r from-[#6E6FEA] via-[#8B7DF0] to-[#4FD1C5] bg-clip-text text-transparent">
-//                 everything into orbit.
-//               </span>
-//             </h1>
-
-//             <p className="text-black/50 text-lg leading-relaxed max-w-md mb-10">
-//               Research, planning, coding, and review — run by specialized
-//               agents that coordinate around a single core, so you only manage
-//               the outcome.
-//             </p>
-
-//             <button
-//               onClick={googleLogin}
-//               disabled={loading}
-//               className="inline-flex items-center gap-3 bg-[#1C1B1F] text-white font-medium text-sm rounded-full pl-2 pr-6 py-2.5 hover:shadow-xl hover:shadow-[#6E6FEA]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-//             >
-//               <span className="bg-white rounded-full p-2">
-//                 <GoogleIcon />
-//               </span>
-//               {loading ? "Signing in…" : "Continue with Google"}
-//             </button>
-
-//             {error && <p className="text-[#D9534F] text-sm mt-4">{error}</p>}
-//             <p className="text-black/35 text-xs mt-5">
-//               No credit card required · agents ready in under a minute
-//             </p>
-//           </div>
-
-//           {/* Signature element: orbit of agents around a core, light mode */}
-//           <div className="relative h-[420px] hidden md:flex items-center justify-center">
-//             <div className="absolute w-[300px] h-[300px] rounded-full border border-black/[0.06]" />
-//             <div className="absolute w-[220px] h-[220px] rounded-full border border-black/[0.05]" />
-
-//             <div className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-[#6E6FEA] to-[#4FD1C5] flex items-center justify-center motion-safe:animate-[pulse-core_3s_ease-in-out_infinite] z-10">
-//               <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold text-white">
-//                 CORE
-//               </span>
-//             </div>
-
-//             <div className="absolute w-full h-full motion-safe:animate-[spin-slow_26s_linear_infinite]">
-//               {AGENTS.map((agent, i) => (
-//                 <div
-//                   key={agent.label}
-//                   className="absolute top-1/2 left-1/2"
-//                   style={{ transform: `translate(${orbitPositions[i].x}px, ${orbitPositions[i].y}px)` }}
-//                 >
-//                   <div className="motion-safe:animate-[spin-slow-rev_26s_linear_infinite] -translate-x-1/2 -translate-y-1/2">
-//                     <div className="w-32 rounded-xl border border-black/[0.06] bg-white/80 backdrop-blur-md px-3.5 py-2.5 shadow-[0_8px_24px_rgba(28,27,31,0.08)] hover:-translate-y-1 transition-transform">
-//                       <div className="flex items-center gap-1.5 mb-0.5">
-//                         <span className="w-1.5 h-1.5 rounded-full" style={{ background: agent.color }} />
-//                         <p className="font-[Space_Grotesk,sans-serif] text-[13px] font-medium">
-//                           {agent.label}
-//                         </p>
-//                       </div>
-//                       <p className="text-[11px] text-black/40">{agent.detail}</p>
-//                     </div>
-//                   </div>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </section>
-
-//         {/* Agents / features */}
-//         <section id="agents" className="max-w-6xl mx-auto px-6 py-24 border-t border-black/[0.06]">
-//           <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-3">
-//             Every agent has a job.
-//           </h2>
-//           <p className="text-black/45 max-w-xl mb-14 text-lg">
-//             Define the roster once. Vortex routes tasks to the right agent
-//             and hands off context automatically between them.
-//           </p>
-
-//           <div className="grid md:grid-cols-3 gap-6">
-//             <FeatureCard
-//               tag="01"
-//               title="Specialized roles"
-//               text="Each agent is scoped to one job, so outputs stay focused and predictable."
-//               accent="#6E6FEA"
-//             />
-//             <FeatureCard
-//               tag="02"
-//               title="Shared context"
-//               text="Agents pass structured context to each other — nothing gets lost between hand-offs."
-//               accent="#4FD1C5"
-//             />
-//             <FeatureCard
-//               tag="03"
-//               title="One dashboard"
-//               text="Watch the whole pipeline run in real time, and step in wherever you need to."
-//               accent="#F0B45E"
-//             />
-//           </div>
-//         </section>
-
-//         {/* How it works */}
-//         <section id="how" className="border-t border-black/[0.06] bg-white/50">
-//           <div className="max-w-6xl mx-auto px-6 py-24">
-//             <h2 className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold mb-14">
-//               How a task moves through the pipeline
-//             </h2>
-//             <div className="grid md:grid-cols-4 gap-8">
-//               <Step n="01" title="Submit a task" text="Describe the outcome you want in plain language." />
-//               <Step n="02" title="Agents activate" text="The core assigns work to the relevant agents." />
-//               <Step n="03" title="Work happens" text="Each agent runs its step and passes context forward." />
-//               <Step n="04" title="Review & ship" text="You get a merged result, ready to approve or refine." />
-//             </div>
-//           </div>
-//         </section>
-
-//         {/* Stats strip — replaces a 3rd repeated CTA */}
-//         <section className="border-t border-black/[0.06]">
-//           <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-//             {STATS.map((s) => (
-//               <div key={s.label} className="text-center md:text-left">
-//                 <p className="font-[Space_Grotesk,sans-serif] text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#6E6FEA] to-[#4FD1C5] bg-clip-text text-transparent">
-//                   {s.value}
-//                 </p>
-//                 <p className="text-black/45 text-sm mt-1">{s.label}</p>
-//               </div>
-//             ))}
-//           </div>
-//         </section>
-//       </main>
-
-//       <footer className="border-t border-black/[0.06] py-8 text-center text-xs text-black/35">
-//         © {new Date().getFullYear()} Vortex AI — multi-agent AI platform
-//       </footer>
-//     </div>
-//   );
-// }
-
-// function FeatureCard({ tag, title, text, accent }) {
-//   return (
-//     <div className="rounded-2xl border border-black/[0.06] bg-white/70 backdrop-blur-sm p-7 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(28,27,31,0.08)] transition-all">
-//       <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold" style={{ color: accent }}>{tag}</span>
-//       <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mt-3 mb-2">{title}</h3>
-//       <p className="text-black/45 text-sm leading-relaxed">{text}</p>
-//     </div>
-//   );
-// }
-
-// function Step({ n, title, text }) {
-//   return (
-//     <div>
-//       <span className="font-[Space_Grotesk,sans-serif] text-xs font-semibold text-[#6E6FEA]">{n}</span>
-//       <h3 className="font-[Space_Grotesk,sans-serif] font-semibold text-lg mt-2 mb-2">{title}</h3>
-//       <p className="text-black/45 text-sm leading-relaxed">{text}</p>
-//     </div>
-//   );
-// }
-
-// function GoogleIcon({ size = 16 }) {
-//   return (
-//     <svg width={size} height={size} viewBox="0 0 18 18" aria-hidden="true">
-//       <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
-//       <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.98v2.33A9 9 0 0 0 9 18z"/>
-//       <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.05l2.99-2.33z"/>
-//       <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.95l2.99 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
-//     </svg>
-//   );
-// }
-
-// export default Login;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { signInWithPopup } from "firebase/auth";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -647,7 +318,6 @@ function Login() {
     };
   }, []);
 
-
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
@@ -657,11 +327,10 @@ function Login() {
   console.log(userData);
 }, [userData]);  */
 
-
   const handleLogin = async (token) => {
     try {
       const { data } = await api.post("/api/auth/login", { token });
-      dispatch(setUserdata(data))
+      dispatch(setUserdata(data.user));
       return data;
     } catch (error) {
       console.error(error);
@@ -872,9 +541,9 @@ function Login() {
             </h1>
 
             <p className="text-black/55 text-lg leading-relaxed max-w-md mb-10 motion-safe:animate-[fadeUp_0.7s_ease-out_0.16s_both]">
-              Planning, research, coding, and review — run by specialized agents that hand
-              off structured context to each other. You approve the outcome, not
-              the busywork.
+              Planning, research, coding, and review — run by specialized agents
+              that hand off structured context to each other. You approve the
+              outcome, not the busywork.
             </p>
 
             <button
@@ -953,9 +622,9 @@ function Login() {
                   const s = STATUS_STYLES[agent.status];
                   const load =
                     agent.status === "active"
-                      ? 62 + (i * 11) % 30
+                      ? 62 + ((i * 11) % 30)
                       : agent.status === "queued"
-                        ? 30 + (i * 7) % 20
+                        ? 30 + ((i * 7) % 20)
                         : 8;
                   return (
                     <div

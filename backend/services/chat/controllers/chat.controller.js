@@ -1,18 +1,42 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 
+// export const createConversation = async (req, res) => {
+//   try {
+//     const userId = req.headers["x-user-id"];
+//     console.log("userId", userId);
+//     const conversations = await Conversation.find({
+//       userId: userId,
+//     }).sort({ updatedAt: -1 });
+
+//     return res.status(200).json(conversations);
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ message: `create conversation error ${error}` });
+//   }
+// };
+
+
 export const createConversation = async (req, res) => {
   try {
     const userId = req.headers["x-user-id"];
-    console.log("userId", userId);
+
+    console.log("Creating conversation for:", userId);
+
     const conversation = await Conversation.create({
-      userId: userId,
+      userId,
     });
+
+    console.log("Created:", conversation);
+
     return res.status(200).json(conversation);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: `create conversation error ${error}` });
+
+  } catch(error) {
+    console.log(error);
+    return res.status(500).json({
+      message:error.message
+    });
   }
 };
 
