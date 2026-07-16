@@ -13,7 +13,7 @@ router.get("/create-conversation", createConversation);
 router.get("/get-conversations", getConversations);
 router.post("/update-conversation", updateConversation);
 router.post("/save-message", saveMessage);
-router.post("/get-message/:conversationId",getMessages);
+router.get("/get-messages/:conversationId",getMessages);
 
 
 export default router

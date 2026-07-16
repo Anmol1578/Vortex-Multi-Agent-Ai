@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import protect from "./middleware/auth.middleware.js";
 import { getCurrentUser } from "./controller/user.controller.js";
 import { proxyWithHeader } from "./utils/proxyWithHeader.js";
+import morgan from "morgan";
 
 
 const PORT = process.env.PORT;
@@ -19,6 +20,8 @@ app.use(cors({
     credentials: true, // Allow cookies to be sent
 }));
 
+
+app.use(morgan("dev"));
 app.use(cookieParser());
 
 

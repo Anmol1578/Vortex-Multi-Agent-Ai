@@ -40,7 +40,6 @@ workflow.addConditionalEdges(
 
       default:
         return "chat";
-        break;
     }
   },{
     chat: "chat",

@@ -377,13 +377,6 @@
 
 
 
-
-
-
-
-
-
-
 // import {
 //   User,
 //   LogOut,
@@ -803,6 +796,8 @@
 
 
 
+
+
 import {
   User,
   LogOut,
@@ -825,29 +820,6 @@ import logout from "../features/logout";
 import { setUserdata } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 
-export const AGENTS = [
-  {
-    id: "researcher",
-    label: "RESEARCHER",
-    code: "RE",
-    color: "#1E7A56",
-    role: "gathers context",
-  },
-  {
-    id: "coder",
-    label: "CODER",
-    code: "CO",
-    color: "#34506B",
-    role: "writes & tests",
-  },
-  {
-    id: "reviewer",
-    label: "REVIEWER",
-    code: "RV",
-    color: "#B3503F",
-    role: "checks output",
-  },
-];
 
 function RailIcon({ children, label, active, onClick }) {
   return (
@@ -893,25 +865,7 @@ function ChatIcon() {
     </svg>
   );
 }
-function AgentsIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <circle cx="5" cy="5" r="2" />
-      <circle cx="19" cy="5" r="2" />
-      <circle cx="5" cy="19" r="2" />
-      <circle cx="19" cy="19" r="2" />
-      <path d="M9.5 9.5L6.5 6.5M14.5 9.5l3-3M9.5 14.5l-3 3M14.5 14.5l3 3" />
-    </svg>
-  );
-}
+
 function FilesIcon() {
   return (
     <svg
@@ -943,21 +897,6 @@ function HistoryIcon() {
     </svg>
   );
 }
-function SettingsIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  );
-}
 
 /**
  * Groups a list of conversations into date buckets for the History panel.
@@ -970,19 +909,27 @@ function startOfDay(date) {
 
 function groupConversationsByDate(conversations) {
   const groups = { Today: [], Yesterday: [], "This Week": [], Earlier: [] };
-  const todayStart = startOfDay(new Date());
+
+  const today = startOfDay(new Date());
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
 
   conversations.forEach((conv) => {
     const convDayStart = startOfDay(new Date(conv.updatedAt));
-    // Whole calendar days between the two dates (always >= 0 for past dates)
-    const diffCalendarDays = Math.round(
-      (todayStart - convDayStart) / (1000 * 60 * 60 * 24),
-    );
 
-    if (diffCalendarDays === 0) groups.Today.push(conv);
-    else if (diffCalendarDays === 1) groups.Yesterday.push(conv);
-    else if (diffCalendarDays <= 7) groups["This Week"].push(conv);
-    else groups.Earlier.push(conv);
+    if (convDayStart.getTime() === today.getTime()) {
+      groups.Today.push(conv);
+    } else if (convDayStart.getTime() === yesterday.getTime()) {
+      groups.Yesterday.push(conv);
+    } else if (convDayStart.getTime() > weekAgo.getTime()) {
+      groups["This Week"].push(conv);
+    } else {
+      groups.Earlier.push(conv);
+    }
   });
 
   return groups;
@@ -1065,17 +1012,50 @@ function Sidebar({ onNewSession }) {
     <>
       {/* Icon rail */}
       <aside className="w-16 shrink-0 border-r border-black/[0.07] bg-white/50 backdrop-blur-xl flex flex-col items-center py-5 gap-6 z-10 motion-safe:animate-[fadeUp_0.5s_ease-out_both]">
-        <div className="w-9 h-9 rounded-md bg-[#14151A] flex items-center justify-center relative overflow-hidden">
-          <span className="text-white text-xs font-[Space_Grotesk,sans-serif] font-bold">
-            V
-          </span>
+        <div className="w-9 h-9 rounded-md bg-gradient-to-br from-[#14151A] to-[#0B2E22] flex items-center justify-center relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+          {/* soft glow */}
+          <div className="absolute inset-0 bg-[#1E7A56]/25 blur-md rounded-full scale-75" />
 
-          <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite] ring-2 ring-white" />
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="relative z-10"
+          >
+            <defs>
+              <linearGradient id="vGradient" x1="0" y1="0" x2="24" y2="24">
+                <stop offset="0%" stopColor="#5EEAD4" />
+                <stop offset="100%" stopColor="#1E7A56" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M3 4L12 20L21 4"
+              stroke="url(#vGradient)"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <path
+              d="M7.5 4L12 12.5L16.5 4"
+              stroke="url(#vGradient)"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              opacity="0.5"
+            />
+          </svg>
+
+          <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite] ring-2 ring-white z-10" />
         </div>
+
         <nav className="flex flex-col items-center gap-1 mt-4">
           <RailIcon
             label="Sessions"
-            active={activeRail === "sessions"}
+            // active={activeRail === "sessions"}
+            active={!collapsed && activeRail === "sessions"}
             onClick={() => {
               setActiveRail("sessions");
               setCollapsed(false);
@@ -1084,17 +1064,14 @@ function Sidebar({ onNewSession }) {
             <ChatIcon />
           </RailIcon>
 
-          <RailIcon label="Agents">
-            <AgentsIcon />
-          </RailIcon>
-
           <RailIcon label="Files">
             <FilesIcon />
           </RailIcon>
 
           <RailIcon
             label="History"
-            active={activeRail === "history"}
+            // active={activeRail === "history"}
+            active={!collapsed && activeRail === "history"}
             onClick={() => {
               setActiveRail("history");
               setCollapsed(false);
@@ -1103,11 +1080,8 @@ function Sidebar({ onNewSession }) {
             <HistoryIcon />
           </RailIcon>
         </nav>
-        <div className="mt-auto flex flex-col items-center gap-3">
-          <RailIcon label="Settings">
-            <SettingsIcon />
-          </RailIcon>
 
+        <div className="mt-auto flex flex-col items-center gap-3">
           {/* Collapsed state: show expand button here instead of avatar */}
           {collapsed && (
             <RailIcon

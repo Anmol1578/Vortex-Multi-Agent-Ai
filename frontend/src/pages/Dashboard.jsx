@@ -789,21 +789,6 @@
 
 // export default Dashboard;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import React, { useState, useRef, useEffect } from "react";
 
 // const AGENTS = [
@@ -1919,38 +1904,32 @@
 // export default Dashboard;
 
 
+
+
 import React from "react";
 import Sidebar from "../components/Sidebar";
+import ChatArea from "../components/ChatArea";
 import { useDispatch } from "react-redux";
 import { addConversation } from "../redux/conversationSlice";
 import { createConversation } from "../features/createConversation";
 
 function Dashboard() {
+  const dispatch = useDispatch();
 
-   const dispatch = useDispatch();
+  const handleNewSession = async () => {
+    const conversation = await createConversation();
 
- const handleNewSession = async () => {
-  const conversation = await createConversation();
+    console.log("Created Conversation:", conversation);
 
-  console.log("Created Conversation:", conversation);
+    if (conversation) {
+      dispatch(addConversation(conversation));
+    }
+  };
 
-  if (conversation) {
-    dispatch(addConversation(conversation));
-  }
-};
-
- return (
+  return (
     <div className="flex h-screen w-full bg-[#F7F7F5] overflow-hidden">
       <Sidebar onNewSession={handleNewSession} />
-
-      <main className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 mt-2">
-            Sidebar loaded successfully.
-          </p>
-        </div>
-      </main>
+      <ChatArea />
     </div>
   );
 }
