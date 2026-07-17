@@ -1,5 +1,5 @@
 import axios from "axios";
-import { graph } from "../graph/graph.js"
+import { graph } from "../graph/graph.js";
 
 export const agent = async (req, res) => {
   try {
@@ -11,13 +11,19 @@ export const agent = async (req, res) => {
     });
 
     const result = await graph.invoke({
-        prompt, conversationId
-    })
+      prompt,
+      conversationId,
+    });
 
-    const reponse =  result.aiResponse
-    return res.status(200).json(reponse)
+    const response = result.aiResponse;
+    await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
+      conversationId,
+      role: "assistant",
+      content: response,
+    });
 
+    return res.status(200).json(response);
   } catch (error) {
-      return res.status(500).json({message:`agent error ${error}`})
+    return res.status(500).json({ message: `agent error ${error}` });
   }
 };
