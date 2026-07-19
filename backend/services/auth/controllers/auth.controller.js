@@ -42,14 +42,21 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ message: "Login successful", user });
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: `Error logging in: ${error.message}` });
   }
 };
-
-// export const logout = async (req, res) => { 
-// try { 
+// export const logout = async (req, res) => {
+// try {
 //   const { session } = req.cookies?.session;
 //   await redis.del(`session:${session}`);
 //   res.clearCookie("session");
@@ -57,7 +64,7 @@ export const login = async (req, res) => {
 
 // } catch (error) {
 //   res.status(500).json({ message: `Error logging out: ${error.message}` });
-// } 
+// }
 // }
 
 export const logout = async (req, res) => {

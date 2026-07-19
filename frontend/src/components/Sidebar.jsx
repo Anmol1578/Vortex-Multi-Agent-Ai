@@ -776,16 +776,6 @@
 
 // export default Sidebar;
 
-
-
-
-
-
-
-
-
-
-
 import {
   User,
   LogOut,
@@ -805,6 +795,7 @@ import {
 } from "../redux/conversationSlice";
 import logout from "../features/logout";
 import { setUserdata } from "../redux/userSlice";
+import { setMessages } from "../redux/messageSlice";
 import { useNavigate } from "react-router-dom";
 
 function RailIcon({ children, label, active, onClick }) {
@@ -973,6 +964,9 @@ function Sidebar({ onNewSession }) {
     try {
       await logout();
       dispatch(setUserdata(null));
+      dispatch(setSelectedConversation(null));
+      dispatch(setConversations([]));
+      dispatch(setMessages([]));
       navigate("/login");
     } catch (error) {
       console.log("Logout failed:", error);
