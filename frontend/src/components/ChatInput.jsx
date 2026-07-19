@@ -105,16 +105,6 @@
 
 // export default ChatInput;
 
-
-
-
-
-
-
-
-
-
-
 // import React from "react";
 // import { useDispatch, useSelector } from "react-redux";
 // import sendMessage from "../features/sendMessage";
@@ -268,21 +258,49 @@
 // export default ChatInput;
 
 
+
+
+
+
+
+
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import sendMessage from "../features/sendMessage";
 import { addMessages } from "../redux/messageSlice";
+import { createConversation } from "../features/createConversation";
+import {
+  setSelectedConversation,
+  addConversation,
+  setJustCreated,
+  setConvTitle,
+} from "../redux/conversationSlice";
+import { updateConversation } from "../features/updateConversation";
 
 function AttachIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.19 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   );
 }
 function MicIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <rect x="9" y="2" width="6" height="12" rx="3" />
       <path d="M5 10a7 7 0 0 0 14 0M12 19v3" />
     </svg>
@@ -290,7 +308,16 @@ function MicIcon() {
 }
 function SendIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="white"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
     </svg>
   );
@@ -312,13 +339,41 @@ const AGENTS = [
   { id: "coding", label: "CODING", color: "#5B4FC7" },
 ];
 
-function ChatInput({ input, setInput, mode, setMode, setThinking, setActiveAgent }) {
+function ChatInput({
+  input,
+  setInput,
+  mode,
+  setMode,
+  setThinking,
+  setActiveAgent,
+}) {
   const dispatch = useDispatch();
   const { selectedConversation } = useSelector((state) => state.conversation);
 
   const handleSendMessage = async () => {
+    let conversation = selectedConversation;
+
+    if (!conversation) {
+      conversation = await createConversation();
+      dispatch(addConversation(conversation));
+      dispatch(setJustCreated(true));
+      dispatch(setSelectedConversation(conversation));
+    }
+
     const content = input.trim();
     if (!content) return;
+
+    // Auto-title the conversation from the first message
+    if (conversation.title === "New Chat") {
+      const newTitle = content.slice(0, 60); // keep titles reasonably short
+      await updateConversation({ id: conversation._id, title: newTitle });
+      dispatch(
+        setConvTitle({
+          conversationId: conversation._id,
+          title: newTitle,
+        }),
+      );
+    }
 
     const guessedId =
       mode !== "auto"
@@ -330,7 +385,6 @@ function ChatInput({ input, setInput, mode, setMode, setThinking, setActiveAgent
       AGENTS.find((a) => a.id === guessedId) ??
       AGENTS.find((a) => a.id === "chat");
 
-    // optimistically add the user's message
     dispatch(addMessages({ role: "user", content }));
     setInput("");
     setThinking(true);
@@ -338,16 +392,15 @@ function ChatInput({ input, setInput, mode, setMode, setThinking, setActiveAgent
 
     const payload = {
       prompt: content,
-      conversationId: selectedConversation?._id,
+      conversationId: conversation?._id,
     };
 
     const data = await sendMessage(payload);
 
-    // NOTE: assuming the backend returns either a plain string or an
-    // object with a `content` field — adjust this line once you confirm
-    // the actual shape of `result.aiResponse` from your agent controller.
     const replyContent =
-      typeof data === "string" ? data : (data?.content ?? "Something went wrong — no response from agent.");
+      typeof data === "string"
+        ? data
+        : (data?.content ?? "Something went wrong — no response from agent.");
 
     dispatch(addMessages({ role: "agent", agent, content: replyContent }));
     setThinking(false);
@@ -389,10 +442,16 @@ function ChatInput({ input, setInput, mode, setMode, setThinking, setActiveAgent
           />
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-3 text-black/35">
-              <button className="hover:text-[#1E7A56] transition-colors" aria-label="Attach file">
+              <button
+                className="hover:text-[#1E7A56] transition-colors"
+                aria-label="Attach file"
+              >
                 <AttachIcon />
               </button>
-              <button className="hover:text-[#1E7A56] transition-colors" aria-label="Voice input">
+              <button
+                className="hover:text-[#1E7A56] transition-colors"
+                aria-label="Voice input"
+              >
                 <MicIcon />
               </button>
             </div>

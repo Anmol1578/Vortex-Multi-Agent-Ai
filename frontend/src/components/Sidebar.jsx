@@ -368,15 +368,6 @@
 
 // export default Sidebar;
 
-
-
-
-
-
-
-
-
-
 // import {
 //   User,
 //   LogOut,
@@ -795,9 +786,6 @@
 
 
 
-
-
-
 import {
   User,
   LogOut,
@@ -815,11 +803,9 @@ import {
   setConversations,
   setSelectedConversation,
 } from "../redux/conversationSlice";
-import { createConversation } from "../features/createConversation";
 import logout from "../features/logout";
 import { setUserdata } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
-
 
 function RailIcon({ children, label, active, onClick }) {
   return (
@@ -979,16 +965,8 @@ function Sidebar({ onNewSession }) {
     dispatch(setSelectedConversation(conversation));
   };
 
-  const handleCreateConversation = async () => {
-    try {
-      const data = await createConversation();
-
-      if (data) {
-        dispatch(addConversation(data));
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  const handleCreateConversation = () => {
+    dispatch(setSelectedConversation(null));
   };
 
   const handleLogout = async () => {
