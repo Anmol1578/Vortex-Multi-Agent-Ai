@@ -261,9 +261,6 @@
 
 
 
-
-
-
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import sendMessage from "../features/sendMessage";
@@ -409,7 +406,7 @@ function ChatInput({
 
   return (
     <div className="p-5 border-t border-black/[0.07] bg-white/25 backdrop-blur-xl z-10">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-[820px] mx-auto -translate-x-[5%]">
         <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar">
           {MODES.map((m) => (
             <button

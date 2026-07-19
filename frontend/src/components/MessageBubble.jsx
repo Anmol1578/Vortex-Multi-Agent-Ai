@@ -103,14 +103,32 @@ import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function CodeGlyphIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B4FC7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#5B4FC7"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
     </svg>
   );
 }
 function ChevronIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );
@@ -125,7 +143,10 @@ function extractArtifact(content) {
   const text = content.replace(full, "").trim();
   return {
     text,
-    artifact: { language: (lang || "text").toLowerCase(), code: code.replace(/\n$/, "") },
+    artifact: {
+      language: (lang || "text").toLowerCase(),
+      code: code.replace(/\n$/, ""),
+    },
   };
 }
 
@@ -137,7 +158,10 @@ function ArtifactCard({ artifact, onOpen }) {
       className="w-full text-left rounded-lg border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
     >
       <div className="flex items-center gap-2.5 px-4 py-3">
-        <span className="w-8 h-8 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(91,79,199,0.1)" }}>
+        <span
+          className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+          style={{ background: "rgba(91,79,199,0.1)" }}
+        >
           <CodeGlyphIcon />
         </span>
         <div className="min-w-0 flex-1">
@@ -205,7 +229,9 @@ function MessageBubble({ message, onOpenArtifact }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
-        <div className="max-w-[75%] rounded-lg rounded-tr-sm bg-[#14151A] text-white text-sm px-4 py-3">
+        {/* <div className="max-w-[75%] rounded-lg rounded-tr-sm bg-[#14151A] text-white text-sm px-4 py-3"> */}
+
+        <div className="max-w-[80%] rounded-lg rounded-tr-sm bg-[#14151A] text-white text-sm px-4 py-3">
           {message.content}
         </div>
       </div>
@@ -217,10 +243,16 @@ function MessageBubble({ message, onOpenArtifact }) {
 
   return (
     <div className="flex justify-start motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
-      <div className="max-w-[75%] w-full">
+      <div className="max-w-[85%] w-full">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: agent?.color ?? "#1E7A56" }} />
-          <span className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium" style={{ color: agent?.color ?? "#1E7A56" }}>
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: agent?.color ?? "#1E7A56" }}
+          />
+          <span
+            className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium"
+            style={{ color: agent?.color ?? "#1E7A56" }}
+          >
             {agent?.label ?? "VORTEX"}
           </span>
         </div>
@@ -230,7 +262,12 @@ function MessageBubble({ message, onOpenArtifact }) {
               <Markdown components={markdownComponents}>{text}</Markdown>
             </div>
           )}
-          {artifact && <ArtifactCard artifact={artifact} onOpen={() => onOpenArtifact(artifact)} />}
+          {artifact && (
+            <ArtifactCard
+              artifact={artifact}
+              onOpen={() => onOpenArtifact(artifact)}
+            />
+          )}
         </div>
       </div>
     </div>

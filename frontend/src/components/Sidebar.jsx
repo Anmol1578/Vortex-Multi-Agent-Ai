@@ -776,6 +776,10 @@
 
 // export default Sidebar;
 
+
+
+
+
 import {
   User,
   LogOut,
@@ -984,44 +988,50 @@ function Sidebar({ onNewSession }) {
     <>
       {/* Icon rail */}
       <aside className="w-16 shrink-0 border-r border-black/[0.07] bg-white/50 backdrop-blur-xl flex flex-col items-center py-5 gap-6 z-10 motion-safe:animate-[fadeUp_0.5s_ease-out_both]">
-        <div className="w-9 h-9 rounded-md bg-gradient-to-br from-[#14151A] to-[#0B2E22] flex items-center justify-center relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-          {/* soft glow */}
-          <div className="absolute inset-0 bg-[#1E7A56]/25 blur-md rounded-full scale-75" />
+        <button
+          onClick={() => setCollapsed((prev) => !prev)}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="w-9 h-9 rounded-md bg-gradient-to-br from-[#14151A] to-[#0B2E22] flex items-center justify-center relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-transform duration-200 hover:scale-105 active:scale-95"
+        >
+          <div className="w-9 h-9 rounded-md bg-gradient-to-br from-[#14151A] to-[#0B2E22] flex items-center justify-center relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            {/* soft glow */}
+            <div className="absolute inset-0 bg-[#1E7A56]/25 blur-md rounded-full scale-75" />
 
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="relative z-10"
-          >
-            <defs>
-              <linearGradient id="vGradient" x1="0" y1="0" x2="24" y2="24">
-                <stop offset="0%" stopColor="#5EEAD4" />
-                <stop offset="100%" stopColor="#1E7A56" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M3 4L12 20L21 4"
-              stroke="url(#vGradient)"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
               fill="none"
-            />
-            <path
-              d="M7.5 4L12 12.5L16.5 4"
-              stroke="url(#vGradient)"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              opacity="0.5"
-            />
-          </svg>
+              className="relative z-10"
+            >
+              <defs>
+                <linearGradient id="vGradient" x1="0" y1="0" x2="24" y2="24">
+                  <stop offset="0%" stopColor="#5EEAD4" />
+                  <stop offset="100%" stopColor="#1E7A56" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M3 4L12 20L21 4"
+                stroke="url(#vGradient)"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              <path
+                d="M7.5 4L12 12.5L16.5 4"
+                stroke="url(#vGradient)"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                opacity="0.5"
+              />
+            </svg>
 
-          <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite] ring-2 ring-white z-10" />
-        </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#1E7A56] motion-safe:animate-[blink_2.2s_ease-in-out_infinite] ring-2 ring-white z-10" />
+          </div>
+        </button>
 
         <nav className="flex flex-col items-center gap-1 mt-4">
           <RailIcon
