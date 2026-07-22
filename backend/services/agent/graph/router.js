@@ -1,106 +1,3 @@
-// import { getModel } from "../config/llmmodels.js";
-
-// export const router = async (state) => {
-//   const llm = getModel("router");
-
-//   const prompt = `
-// You are an intelligent AI router.
-
-// Your task is to analyze the user's latest message and determine which specialized agent should handle it.
-
-// Available agents:
-
-// - chat
-//   Use for:
-//   - General conversation
-//   - Greetings
-//   - Explanations
-//   - Brainstorming
-//   - Writing emails, blogs, essays, captions
-//   - Translation
-//   - Summarization
-//   - Any request that does not fit another agent
-
-// - search
-//   Use for:
-//   - Current events
-//   - Latest news
-//   - Weather
-//   - Sports scores
-//   - Stock prices
-//   - Internet research
-//   - Any request requiring web search or up-to-date information
-
-// - coding
-//   Use for:
-//   - Programming
-//   - Debugging
-//   - Code generation
-//   - Code explanation
-//   - APIs
-//   - Databases
-//   - DevOps
-//   - Software architecture
-//   - Technical interview questions
-
-// - pdf
-//   Use for:
-//   - Reading PDF documents
-//   - Summarizing PDFs
-//   - Extracting text from PDFs
-//   - Answering questions about uploaded PDFs
-
-// - ppt
-//   Use for:
-//   - Creating PowerPoint presentations
-//   - Editing presentations
-//   - Designing slide decks
-//   - Converting notes into presentation slides
-
-// - vision
-//   Use for:
-//   - Image generation
-//   - Image editing
-//   - Image analysis
-//   - OCR
-//   - Visual question answering
-
-// Rules:
-// 1. Select exactly ONE agent.
-// 2. Return ONLY one of:
-// chat
-// search
-// coding
-// pdf
-// ppt
-// vision
-// 3. Do not explain your decision.
-
-// User Query:
-// ${state.prompt}
-// `;
-
-//   const response = await llm.invoke(prompt);
-//   console.log(response)
-
-//   const validAgents = [
-//     "chat",
-//     "search",
-//     "coding",
-//     "pdf",
-//     "ppt",
-//     "vision",
-//   ];
-
-//   const agent = response.content.trim().toLowerCase();
-
-//   return {
-//     ...state,
-//     agent: validAgents.includes(agent) ? agent : "chat",
-//   };
-// };
-
-
 import { getModel } from "../config/llmmodels.js";
 
 const VALID_AGENTS = ["chat", "search", "coding", "pdf", "ppt", "vision"];
@@ -249,10 +146,22 @@ const extractJson = (text) => {
   }
 };
 
-const sanitizeAgent = (value) =>
-  VALID_AGENTS.includes(value) ? value : null;
+const sanitizeAgent = (value) => (VALID_AGENTS.includes(value) ? value : null);
 
 export const router = async (state) => {
+
+
+if (state.agent && state.agent !== "auto") {
+  const clean = sanitizeAgent(state.agent);
+  if (clean) {
+    return {
+      ...state,
+      agent: clean,
+      agentFallback: clean,
+      routerMeta: { source: "explicit", routedAt: new Date().toISOString() },
+    };
+  }
+}
   const llm = getModel("router");
   const prompt = buildPrompt(state);
 
@@ -281,7 +190,7 @@ export const router = async (state) => {
   }
 
   console.log(
-    `[router] query="${state.prompt?.slice(0, 80)}" -> agent=${agent} fallback=${fallback} source=${source}`
+    `[router] query="${state.prompt?.slice(0, 80)}" -> agent=${agent} fallback=${fallback} source=${source}`,
   );
 
   return {
@@ -294,3 +203,11 @@ export const router = async (state) => {
     },
   };
 };
+
+
+
+
+
+
+
+

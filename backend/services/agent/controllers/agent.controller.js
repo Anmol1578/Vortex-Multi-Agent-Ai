@@ -1,11 +1,16 @@
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
-import redis from "../../../shared/redis/redis.js";
 
 export const agent = async (req, res) => {
   try {
-    const { prompt, conversationId } = req.body;
+    const { prompt, conversationId, agent: agentType } = req.body;
+
+    if (!prompt || !conversationId) {
+      return res
+        .status(400)
+        .json({ message: "prompt and conversationId are required" });
+    }
 
     await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
       conversationId,
@@ -16,9 +21,19 @@ export const agent = async (req, res) => {
     const result = await graph.invoke({
       prompt,
       conversationId,
+      agent: agentType,
     });
 
     const response = result.aiResponse;
+
+    if (!response) {
+      console.error("[agent controller] agent returned no aiResponse", {
+        agentType,
+        routedAgent: result.agent,
+        conversationId,
+      });
+      return res.status(500).json({ message: "agent produced no response" });
+    }
 
     await addMessage(conversationId, "user", prompt);
 
@@ -30,8 +45,12 @@ export const agent = async (req, res) => {
       content: response,
     });
 
-    return res.status(200).json(response);
+    return res.status(200).json({
+      content: response,
+      agent: result.agent,
+    });
   } catch (error) {
-    return res.status(500).json({ message: `agent error ${error}` });
+    console.error("[agent controller]", error);
+    return res.status(500).json({ message: "agent error" });
   }
 };
