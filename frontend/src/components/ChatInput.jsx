@@ -482,6 +482,7 @@ function ChatInput({
         role: "agent",
         agent: data?.agent ?? agent,
         content: replyContent,
+       images: data?.images,
       }),
     );
     setThinking(false);

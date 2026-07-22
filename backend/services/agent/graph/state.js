@@ -9,4 +9,6 @@ export const agentState = Annotation.Root({
   routerMeta: Annotation(),
   attachments: Annotation(),
   history: Annotation(),
+  searchResults:Annotation(),
+  images:Annotation(),
 });
