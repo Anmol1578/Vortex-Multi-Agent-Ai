@@ -186,19 +186,6 @@
 
 // export default MessageList;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React from "react";
 import MessageBubble from "./MessageBubble";
 

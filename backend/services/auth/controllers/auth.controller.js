@@ -55,17 +55,6 @@ export const login = async (req, res) => {
     res.status(500).json({ message: `Error logging in: ${error.message}` });
   }
 };
-// export const logout = async (req, res) => {
-// try {
-//   const { session } = req.cookies?.session;
-//   await redis.del(`session:${session}`);
-//   res.clearCookie("session");
-//   return res.status(200).json({ message: "Logout successful" });
-
-// } catch (error) {
-//   res.status(500).json({ message: `Error logging out: ${error.message}` });
-// }
-// }
 
 export const logout = async (req, res) => {
   try {

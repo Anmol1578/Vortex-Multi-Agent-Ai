@@ -1,19 +1,3 @@
-// import React from "react";
-
-// import LandingPage from "./pages/login";
-
-// function App() {
-//   return (
-//     <>
-//       <LandingPage />
-//     </>
-//   );
-// }
-
-// export default App;
-
-
-
 // import React, { useEffect } from "react";
 // import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -47,7 +31,6 @@
 // }
 
 // export default App;
-
 
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
