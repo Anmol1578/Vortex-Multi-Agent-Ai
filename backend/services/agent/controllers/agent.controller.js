@@ -50,13 +50,14 @@ export const agent = async (req, res) => {
       conversationId,
       role: "assistant",
       content: response,
-      images,
+      images, artifacts:result?.artifacts
     });
 
     return res.status(200).json({
       content: response,
       agent: result?.agent,
       images,
+        artifacts: result?.artifacts ?? [],
     });
   } catch (error) {
     console.error("[agent controller]", error);

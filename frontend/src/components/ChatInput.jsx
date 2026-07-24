@@ -210,6 +210,15 @@
 
 // export default ChatInput;
 
+
+
+
+
+
+
+
+
+
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import sendMessage from "../features/sendMessage";
@@ -369,6 +378,7 @@ function ChatInput({
         agent: data?.agent ?? agent,
         content: replyContent,
         images: data?.images,
+        artifacts: data?.artifacts,
       }),
     );
     setThinking(false);
