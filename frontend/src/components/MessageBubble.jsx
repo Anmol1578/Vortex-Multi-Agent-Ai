@@ -410,17 +410,54 @@ function CloseIcon() {
 // `content` (e.g. an older stub agent once saved a message with no content
 // field to the DB). Never let that crash the whole message list.
 
+
 // function extractArtifact(content) {
 //   if (typeof content !== "string" || !content) {
 //     return { text: "", artifact: null };
 //   }
+
+//   // -------- NEW JSON artifact --------
+//   try {
+//     const parsed = JSON.parse(content);
+
+//     if (
+//       parsed &&
+//       parsed.intent === "CODE_GENERATION" &&
+//       Array.isArray(parsed.files)
+//     ) {
+//       return {
+//         text: parsed.message || "",
+//         artifact: {
+//           type: "json",
+//           title: parsed.title,
+//           description: parsed.description,
+//           files: parsed.files,
+//           dependencies: parsed.dependencies || [],
+//           commands: parsed.commands || [],
+//           notes: parsed.notes || [],
+//         },
+//       };
+//     }
+//   } catch {
+//     // Not JSON → continue
+//   }
+
+//   // -------- OLD markdown artifact --------
 //   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
-//   if (!match) return { text: content, artifact: null };
+
+//   if (!match) {
+//     return {
+//       text: content,
+//       artifact: null,
+//     };
+//   }
+
 //   const [full, lang, code] = match;
-//   const text = content.replace(full, "").trim();
+
 //   return {
-//     text,
+//     text: content.replace(full, "").trim(),
 //     artifact: {
+//       type: "markdown",
 //       language: (lang || "text").toLowerCase(),
 //       code: code.replace(/\n$/, ""),
 //     },
@@ -428,46 +465,47 @@ function CloseIcon() {
 // }
 
 
-
 function extractArtifact(content) {
   if (typeof content !== "string" || !content) {
     return { text: "", artifact: null };
   }
 
-  // -------- NEW JSON artifact --------
+  // -------- JSON responses from the coding agent --------
   try {
     const parsed = JSON.parse(content);
 
-    if (
-      parsed &&
-      parsed.intent === "CODE_GENERATION" &&
-      Array.isArray(parsed.files)
-    ) {
-      return {
-        text: parsed.message || "",
-        artifact: {
-          type: "json",
-          title: parsed.title,
-          description: parsed.description,
-          files: parsed.files,
-          dependencies: parsed.dependencies || [],
-          commands: parsed.commands || [],
-          notes: parsed.notes || [],
-        },
-      };
+    if (parsed && typeof parsed === "object" && parsed.intent) {
+      // Shape with files → renders as an artifact card
+      if (Array.isArray(parsed.files) && parsed.files.length > 0) {
+        return {
+          text: parsed.message || "",
+          artifact: {
+            type: "json",
+            title: parsed.title,
+            description: parsed.description,
+            files: parsed.files,
+            dependencies: parsed.dependencies || [],
+            commands: parsed.commands || [],
+            notes: parsed.notes || [],
+          },
+        };
+      }
+
+      // Text-only intents (CODE_REVIEW, CODE_EXPLANATION, DOCUMENTATION,
+      // or DEBUGGING/OPTIMIZATION/CONVERSION with no files) → just the message
+      if (typeof parsed.message === "string") {
+        return { text: parsed.message, artifact: null };
+      }
     }
   } catch {
-    // Not JSON → continue
+    // Not JSON → continue to legacy markdown-fence handling
   }
 
-  // -------- OLD markdown artifact --------
+  // -------- OLD markdown artifact fallback --------
   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
 
   if (!match) {
-    return {
-      text: content,
-      artifact: null,
-    };
+    return { text: content, artifact: null };
   }
 
   const [full, lang, code] = match;
@@ -481,6 +519,14 @@ function extractArtifact(content) {
     },
   };
 }
+
+
+
+
+
+
+
+
 
 
 
