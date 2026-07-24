@@ -409,25 +409,147 @@ function CloseIcon() {
 // Defensive: some stored/incoming messages can have missing or non-string
 // `content` (e.g. an older stub agent once saved a message with no content
 // field to the DB). Never let that crash the whole message list.
+
+// function extractArtifact(content) {
+//   if (typeof content !== "string" || !content) {
+//     return { text: "", artifact: null };
+//   }
+//   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
+//   if (!match) return { text: content, artifact: null };
+//   const [full, lang, code] = match;
+//   const text = content.replace(full, "").trim();
+//   return {
+//     text,
+//     artifact: {
+//       language: (lang || "text").toLowerCase(),
+//       code: code.replace(/\n$/, ""),
+//     },
+//   };
+// }
+
+
+
 function extractArtifact(content) {
   if (typeof content !== "string" || !content) {
     return { text: "", artifact: null };
   }
+
+  // -------- NEW JSON artifact --------
+  try {
+    const parsed = JSON.parse(content);
+
+    if (
+      parsed &&
+      parsed.intent === "CODE_GENERATION" &&
+      Array.isArray(parsed.files)
+    ) {
+      return {
+        text: parsed.message || "",
+        artifact: {
+          type: "json",
+          title: parsed.title,
+          description: parsed.description,
+          files: parsed.files,
+          dependencies: parsed.dependencies || [],
+          commands: parsed.commands || [],
+          notes: parsed.notes || [],
+        },
+      };
+    }
+  } catch {
+    // Not JSON → continue
+  }
+
+  // -------- OLD markdown artifact --------
   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
-  if (!match) return { text: content, artifact: null };
+
+  if (!match) {
+    return {
+      text: content,
+      artifact: null,
+    };
+  }
+
   const [full, lang, code] = match;
-  const text = content.replace(full, "").trim();
+
   return {
-    text,
+    text: content.replace(full, "").trim(),
     artifact: {
+      type: "markdown",
       language: (lang || "text").toLowerCase(),
       code: code.replace(/\n$/, ""),
     },
   };
 }
 
+
+
+
+// function ArtifactCard({ artifact, onOpen }) {
+//   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
+//   return (
+//     <button
+//       onClick={onOpen}
+//       className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
+//     >
+//       <div className="flex items-center gap-3 px-4 py-3.5">
+//         <span
+//           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+//           style={{ background: "rgba(91,79,199,0.1)" }}
+//         >
+//           <CodeGlyphIcon />
+//         </span>
+//         <div className="min-w-0 flex-1">
+//           <p className="text-[13.5px] font-medium leading-tight">
+//             Code artifact
+//           </p>
+//           <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate mt-0.5">
+//             {artifact.language} · {firstLine}
+//             {artifact.code.split("\n")[0].length > 46 ? "…" : ""}
+//           </p>
+//         </div>
+//         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
+//           <ChevronIcon />
+//         </span>
+//       </div>
+//     </button>
+//   );
+// }
+
+
 function ArtifactCard({ artifact, onOpen }) {
+  if (artifact.type === "json") {
+    return (
+      <button
+        onClick={onOpen}
+        className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
+      >
+        <div className="flex items-center gap-3 px-4 py-3.5">
+          <span
+            className="w-8 h-8 rounded-md flex items-center justify-center"
+            style={{ background: "rgba(91,79,199,.1)" }}
+          >
+            <CodeGlyphIcon />
+          </span>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-[13.5px] font-medium">
+              {artifact.title}
+            </p>
+
+            <p className="text-[11.5px] text-black/45 truncate">
+              {artifact.files.length} file(s)
+            </p>
+          </div>
+
+          <ChevronIcon />
+        </div>
+      </button>
+    );
+  }
+
   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
+
   return (
     <button
       onClick={onOpen}
@@ -435,27 +557,29 @@ function ArtifactCard({ artifact, onOpen }) {
     >
       <div className="flex items-center gap-3 px-4 py-3.5">
         <span
-          className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-          style={{ background: "rgba(91,79,199,0.1)" }}
+          className="w-8 h-8 rounded-md flex items-center justify-center"
+          style={{ background: "rgba(91,79,199,.1)" }}
         >
           <CodeGlyphIcon />
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[13.5px] font-medium leading-tight">
-            Code artifact
+
+        <div className="flex-1 min-w-0">
+          <p className="text-[13.5px] font-medium">
+            Code Artifact
           </p>
-          <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate mt-0.5">
+
+          <p className="text-[11.5px] text-black/40 truncate">
             {artifact.language} · {firstLine}
-            {artifact.code.split("\n")[0].length > 46 ? "…" : ""}
           </p>
         </div>
-        <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
-          <ChevronIcon />
-        </span>
+
+        <ChevronIcon />
       </div>
     </button>
   );
 }
+
+
 
 /* ------------------------- image grid ------------------------- */
 
