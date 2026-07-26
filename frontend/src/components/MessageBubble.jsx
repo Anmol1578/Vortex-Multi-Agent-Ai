@@ -1058,14 +1058,48 @@ function CloseIcon() {
 
 /* ------------------------- artifact extraction ------------------------- */
 
-// Defensive: some stored/incoming messages can have missing or non-string
-// `content` (e.g. an older stub agent once saved a message with no content
-// field to the DB). Never let that crash the whole message list.
-
-
-
 // function ArtifactCard({ artifact, onOpen }) {
-//   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
+//   if (!artifact) return null;
+
+//   // JSON artifact (multiple files)
+//  if (Array.isArray(artifact.files) && artifact.files.length > 0) {
+//     return (
+//       <button
+//         onClick={onOpen}
+//         className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
+//       >
+//         <div className="flex items-center gap-3 px-4 py-3.5">
+//           <span
+//             className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+//             style={{ background: "rgba(91,79,199,.1)" }}
+//           >
+//             <CodeGlyphIcon />
+//           </span>
+
+
+//           <div className="flex-1 min-w-0">
+//   <p className="text-[13.5px] font-medium truncate">
+//     {artifact.files[0]?.name || artifact.files[0]?.path?.split("/").pop() || artifact.title || "Untitled file"}
+//   </p>
+
+//   <p className="text-[11.5px] text-black/45 truncate">
+//     {artifact.files.length} file
+//     {artifact.files.length !== 1 ? "s" : ""}
+//   </p>
+// </div>
+
+//           <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
+//             <ChevronIcon />
+//           </span>
+//         </div>
+//       </button>
+//     );
+//   }
+
+//   // Legacy single-code artifact
+// const firstLine =
+//   (artifact.code || "").trim().split("\n")[0].slice(0, 46);
+
 //   return (
 //     <button
 //       onClick={onOpen}
@@ -1074,19 +1108,22 @@ function CloseIcon() {
 //       <div className="flex items-center gap-3 px-4 py-3.5">
 //         <span
 //           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-//           style={{ background: "rgba(91,79,199,0.1)" }}
+//           style={{ background: "rgba(91,79,199,.1)" }}
 //         >
 //           <CodeGlyphIcon />
 //         </span>
-//         <div className="min-w-0 flex-1">
-//           <p className="text-[13.5px] font-medium leading-tight">
-//             Code artifact
+
+//         <div className="flex-1 min-w-0">
+//           <p className="text-[13.5px] font-medium">
+//             Code Artifact
 //           </p>
-//           <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate mt-0.5">
-//             {artifact.language} · {firstLine}
-//             {artifact.code.split("\n")[0].length > 46 ? "…" : ""}
+
+//           <p className="text-[11.5px] text-black/40 truncate">
+//            {artifact.language ?? "Plain Text"} · {firstLine}
+//             {firstLine.length >= 46 ? "…" : ""}
 //           </p>
 //         </div>
+
 //         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
 //           <ChevronIcon />
 //         </span>
@@ -1094,11 +1131,19 @@ function CloseIcon() {
 //     </button>
 //   );
 // }
+
+
+
+
 function ArtifactCard({ artifact, onOpen }) {
   if (!artifact) return null;
 
-  // JSON artifact (multiple files)
- if (Array.isArray(artifact.files) && artifact.files.length > 0) {
+  // Multi-file artifact
+  if (Array.isArray(artifact.files) && artifact.files.length > 0) {
+    const primary = artifact.files[0];
+    const primaryName =
+      primary?.name || primary?.path?.split("/").pop() || "Untitled file";
+
     return (
       <button
         onClick={onOpen}
@@ -1113,10 +1158,7 @@ function ArtifactCard({ artifact, onOpen }) {
           </span>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[13.5px] font-medium">
-              {artifact.title || "Code Artifact"}
-            </p>
-
+            <p className="text-[13.5px] font-medium truncate">{primaryName}</p>
             <p className="text-[11.5px] text-black/45 truncate">
               {artifact.files.length} file
               {artifact.files.length !== 1 ? "s" : ""}
@@ -1131,9 +1173,20 @@ function ArtifactCard({ artifact, onOpen }) {
     );
   }
 
-  // Legacy single-code artifact
-const firstLine =
-  (artifact.code || "").trim().split("\n")[0].slice(0, 46);
+  // Legacy single-code artifact (no real filename available)
+  const LANG_EXT = {
+    javascript: "js",
+    typescript: "ts",
+    python: "py",
+    css: "css",
+    html: "html",
+    json: "json",
+    bash: "sh",
+    markdown: "md",
+  };
+  const ext = LANG_EXT[artifact.language] || "txt";
+  const fallbackName = artifact.name || `snippet.${ext}`;
+  const firstLine = (artifact.code || "").trim().split("\n")[0].slice(0, 46);
 
   return (
     <button
@@ -1149,12 +1202,9 @@ const firstLine =
         </span>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[13.5px] font-medium">
-            Code Artifact
-          </p>
-
+          <p className="text-[13.5px] font-medium truncate">{fallbackName}</p>
           <p className="text-[11.5px] text-black/40 truncate">
-           {artifact.language ?? "Plain Text"} · {firstLine}
+            {artifact.language ?? "Plain Text"} · {firstLine}
             {firstLine.length >= 46 ? "…" : ""}
           </p>
         </div>
@@ -1166,6 +1216,10 @@ const firstLine =
     </button>
   );
 }
+
+
+
+
 
 
 /* ------------------------- image grid ------------------------- */

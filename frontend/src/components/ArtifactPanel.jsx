@@ -910,11 +910,10 @@ function getExt(name = "") {
 function getAccent(name) {
   return ACCENT_BY_EXT[getExt(name)] || "#1E7A56";
 }
-
 function getLanguage(file) {
   if (file?.language) return file.language;
   const ext = file?.path?.split(".").pop()?.toLowerCase();
-  return LANGUAGE_BY_EXT[ext] || "text";
+  return LANGUAGE_BY_EXT[ext] || "markup"; // or "clike" — never "text"
 }
 
 // Handles both artifact shapes:
