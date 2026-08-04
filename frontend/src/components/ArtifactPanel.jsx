@@ -1068,26 +1068,63 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
   }, [entry.id]);
 
   const activeFile = files[activeFileIdx];
+
+
+
+  // ADD THIS FILES 
+const maxContentWidth = useMemo(() => {
+  return Math.max(
+    ...files.map((file) => {
+      const lines = (file.content || "").split("\n");
+      return Math.max(...lines.map((line) => line.length)) * 8;
+    })
+  );
+}, [files]);
+
+
+
+
+
+
   const previewDoc = useMemo(() => buildPreviewDoc(files), [files]);
   const canPreview = Boolean(previewDoc);
 
   // Measure the code's true (unwrapped) width so the panel itself can grow
   // to fit a long line, instead of only scrolling inside a fixed box.
+  // useLayoutEffect(() => {
+  //   if (!onWidthChange) return;
+  //   if (view !== "code" || !codeWrapRef.current) {
+  //     onWidthChange(null);
+  //     return;
+  //   }
+  //   // scrollWidth reflects the code's real content width regardless of how
+  //   // narrow the panel currently is, since the <pre> inside is width: max-content.
+  //   const contentWidth = codeWrapRef.current.scrollWidth;
+  //   // + outer content padding (16px each side) and a little breathing room
+  //   onWidthChange(contentWidth + 32 + 24);
+  // }, [activeFileIdx, view, activeFile?.content, onWidthChange]);
+
+
+
+
+  // ALSO THESE
   useLayoutEffect(() => {
-    if (!onWidthChange) return;
-    if (view !== "code" || !codeWrapRef.current) {
-      onWidthChange(null);
-      return;
-    }
-    // scrollWidth reflects the code's real content width regardless of how
-    // narrow the panel currently is, since the <pre> inside is width: max-content.
-    const contentWidth = codeWrapRef.current.scrollWidth;
-    // + outer content padding (16px each side) and a little breathing room
-    onWidthChange(contentWidth + 32 + 24);
-  }, [activeFileIdx, view, activeFile?.content, onWidthChange]);
+  if (!onWidthChange) return;
+  if (view !== "code") return;
+
+  const width = Math.max(
+    800,
+    Math.min(1400, maxContentWidth + 80)
+  );
+
+  onWidthChange(width);
+}, [view, maxContentWidth, onWidthChange]);
 
   const tabRefs = useRef([]);
   const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
+
+
+
 
   useLayoutEffect(() => {
     const el = tabRefs.current[activeFileIdx];
