@@ -827,6 +827,10 @@
 
 
 
+
+
+
+
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -1356,3 +1360,8 @@ function ArtifactPanel({ artifacts = [], selectedId = null, onSelect, onClose, o
 }
 
 export default ArtifactPanel;
+
+
+
+
+
