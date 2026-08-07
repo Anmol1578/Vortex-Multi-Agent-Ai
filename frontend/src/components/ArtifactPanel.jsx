@@ -1,4 +1,3 @@
-
 // import React, { useMemo, useState } from "react";
 // import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 // import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -304,14 +303,6 @@
 // }
 
 // export default ArtifactPanel;
-
-
-
-
-
-
-
-
 
 
 
@@ -826,11 +817,6 @@
 
 
 
-
-
-
-
-
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -954,9 +940,12 @@ function normalizeArtifact(artifact) {
 
   return [];
 }
-
+//
 function buildPreviewDoc(files) {
-  const html = files.find((f) => /\.html?$/i.test(f.path));
+  // const html = files.find((f) => /\.html?$/i.test(f.path));
+  const html =
+    files.find((f) => f.path === "index.html") ??
+    files.find((f) => /\.html?$/i.test(f.path));
   const css = files.find((f) => /\.css$/i.test(f.path));
   const js = files.find((f) => /\.(js|jsx)$/i.test(f.path));
 
@@ -996,7 +985,10 @@ function relativeTime(date) {
 /* ------------------------------ list view ------------------------------ */
 
 function ArtifactListRow({ entry, onOpen }) {
-  const files = useMemo(() => normalizeArtifact(entry.artifact), [entry.artifact]);
+  const files = useMemo(
+    () => normalizeArtifact(entry.artifact),
+    [entry.artifact],
+  );
   const primary = files[0];
   const accent = getAccent(primary?.path || primary?.name);
   // const title = entry.artifact.title || primary?.name || "Artifact";
@@ -1015,7 +1007,9 @@ function ArtifactListRow({ entry, onOpen }) {
         <FileCode2 size={15} style={{ color: accent }} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[13.5px] font-medium text-black/85 truncate">{title}</p>
+        <p className="text-[13.5px] font-medium text-black/85 truncate">
+          {title}
+        </p>
         <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate">
           {files.length} file{files.length !== 1 ? "s" : ""}
           {entry.agent?.label ? ` · ${entry.agent.label}` : ""}
@@ -1038,14 +1032,20 @@ function ArtifactListView({ entries, onOpen }) {
           >
             <Files size={17} className="text-[#1E7A56]" />
           </span>
-          <p className="text-[13.5px] font-medium text-black/70">No artifacts yet</p>
+          <p className="text-[13.5px] font-medium text-black/70">
+            No artifacts yet
+          </p>
           <p className="text-[12px] text-black/40 mt-1 max-w-[220px]">
             Files Vortex generates in this conversation will show up here.
           </p>
         </div>
       ) : (
         entries.map((entry) => (
-          <ArtifactListRow key={entry.id} entry={entry} onOpen={() => onOpen(entry.id)} />
+          <ArtifactListRow
+            key={entry.id}
+            entry={entry}
+            onOpen={() => onOpen(entry.id)}
+          />
         ))
       )}
     </div>
@@ -1055,7 +1055,10 @@ function ArtifactListView({ entries, onOpen }) {
 /* ----------------------------- detail view ------------------------------ */
 
 function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
-  const files = useMemo(() => normalizeArtifact(entry.artifact), [entry.artifact]);
+  const files = useMemo(
+    () => normalizeArtifact(entry.artifact),
+    [entry.artifact],
+  );
   const [activeFileIdx, setActiveFileIdx] = useState(0);
   const [view, setView] = useState("code");
   const [copied, setCopied] = useState(false);
@@ -1069,22 +1072,15 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
 
   const activeFile = files[activeFileIdx];
 
-
-
-  // ADD THIS FILES 
-const maxContentWidth = useMemo(() => {
-  return Math.max(
-    ...files.map((file) => {
-      const lines = (file.content || "").split("\n");
-      return Math.max(...lines.map((line) => line.length)) * 8;
-    })
-  );
-}, [files]);
-
-
-
-
-
+  // ADD THIS FILES
+  const maxContentWidth = useMemo(() => {
+    return Math.max(
+      ...files.map((file) => {
+        const lines = (file.content || "").split("\n");
+        return Math.max(...lines.map((line) => line.length)) * 8;
+      }),
+    );
+  }, [files]);
 
   const previewDoc = useMemo(() => buildPreviewDoc(files), [files]);
   const canPreview = Boolean(previewDoc);
@@ -1104,27 +1100,18 @@ const maxContentWidth = useMemo(() => {
   //   onWidthChange(contentWidth + 32 + 24);
   // }, [activeFileIdx, view, activeFile?.content, onWidthChange]);
 
-
-
-
   // ALSO THESE
   useLayoutEffect(() => {
-  if (!onWidthChange) return;
-  if (view !== "code") return;
+    if (!onWidthChange) return;
+    if (view !== "code") return;
 
-  const width = Math.max(
-    800,
-    Math.min(1400, maxContentWidth + 80)
-  );
+    const width = Math.max(800, Math.min(1400, maxContentWidth + 80));
 
-  onWidthChange(width);
-}, [view, maxContentWidth, onWidthChange]);
+    onWidthChange(width);
+  }, [view, maxContentWidth, onWidthChange]);
 
   const tabRefs = useRef([]);
   const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
-
-
-
 
   useLayoutEffect(() => {
     const el = tabRefs.current[activeFileIdx];
@@ -1157,7 +1144,8 @@ const maxContentWidth = useMemo(() => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = activeFile.name || activeFile.path?.split("/").pop() || "download.txt";
+    a.download =
+      activeFile.name || activeFile.path?.split("/").pop() || "download.txt";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1178,14 +1166,20 @@ const maxContentWidth = useMemo(() => {
                 ref={(el) => (tabRefs.current[idx] = el)}
                 onClick={() => setActiveFileIdx(idx)}
                 className={`relative shrink-0 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors duration-200 ${
-                  isActive ? "text-black/85" : "text-black/40 hover:text-black/70 hover:bg-black/[0.03]"
+                  isActive
+                    ? "text-black/85"
+                    : "text-black/40 hover:text-black/70 hover:bg-black/[0.03]"
                 }`}
               >
                 <span
                   className="w-1.5 h-1.5 rounded-full shrink-0"
-                  style={{ background: isActive ? tabAccent : "rgba(0,0,0,0.18)" }}
+                  style={{
+                    background: isActive ? tabAccent : "rgba(0,0,0,0.18)",
+                  }}
                 />
-                <span className="truncate max-w-[140px]">{file.path.split("/").pop()}</span>
+                <span className="truncate max-w-[140px]">
+                  {file.path.split("/").pop()}
+                </span>
               </button>
             );
           })}
@@ -1215,7 +1209,9 @@ const maxContentWidth = useMemo(() => {
             <button
               onClick={() => setView("code")}
               className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
-                view === "code" ? "text-black/80" : "text-black/40 hover:text-black/60"
+                view === "code"
+                  ? "text-black/80"
+                  : "text-black/40 hover:text-black/60"
               }`}
             >
               <Code2 size={13} /> Code
@@ -1223,7 +1219,9 @@ const maxContentWidth = useMemo(() => {
             <button
               onClick={() => setView("preview")}
               className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
-                view === "preview" ? "text-black/80" : "text-black/40 hover:text-black/60"
+                view === "preview"
+                  ? "text-black/80"
+                  : "text-black/40 hover:text-black/60"
               }`}
             >
               <Eye size={13} /> Preview
@@ -1273,9 +1271,15 @@ const maxContentWidth = useMemo(() => {
 
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
-        <div key={view + activeFileIdx} className="motion-safe:animate-[fadeUp_0.2s_ease-out_both]">
+        <div
+          key={view + activeFileIdx}
+          className="motion-safe:animate-[fadeUp_0.2s_ease-out_both]"
+        >
           {view === "code" ? (
-            <div ref={codeWrapRef} className="rounded-xl border border-black/[0.07] bg-white overflow-x-auto">
+            <div
+              ref={codeWrapRef}
+              className="rounded-xl border border-black/[0.07] bg-white overflow-x-auto"
+            >
               <SyntaxHighlighter
                 language={getLanguage(activeFile)}
                 style={oneLight}
@@ -1290,7 +1294,10 @@ const maxContentWidth = useMemo(() => {
                   minWidth: "100%",
                 }}
                 codeTagProps={{ style: { background: "transparent" } }}
-                lineNumberStyle={{ color: "rgba(0,0,0,0.22)", minWidth: "2.2em" }}
+                lineNumberStyle={{
+                  color: "rgba(0,0,0,0.22)",
+                  minWidth: "2.2em",
+                }}
               >
                 {activeFile?.content || ""}
               </SyntaxHighlighter>
@@ -1320,7 +1327,13 @@ const maxContentWidth = useMemo(() => {
  * - onSelect(id | null): open a specific artifact, or null to go back to the list
  * - onClose(): close the panel entirely
  */
-function ArtifactPanel({ artifacts = [], selectedId = null, onSelect, onClose, onWidthChange }) {
+function ArtifactPanel({
+  artifacts = [],
+  selectedId = null,
+  onSelect,
+  onClose,
+  onWidthChange,
+}) {
   const selectedEntry = artifacts.find((e) => e.id === selectedId) || null;
   const isList = !selectedEntry;
 
@@ -1328,12 +1341,11 @@ function ArtifactPanel({ artifacts = [], selectedId = null, onSelect, onClose, o
     if (isList) onWidthChange?.(null);
   }, [isList, onWidthChange]);
 
-
   const headerTitle = isList
-  ? "Artifacts"
-  : normalizeArtifact(selectedEntry.artifact)[0]?.name ||
-    selectedEntry.artifact.title ||
-    "Artifact";
+    ? "Artifacts"
+    : normalizeArtifact(selectedEntry.artifact)[0]?.name ||
+      selectedEntry.artifact.title ||
+      "Artifact";
 
   const headerSubtitle = isList
     ? `${artifacts.length} file${artifacts.length !== 1 ? "s" : ""} in this conversation`
@@ -1397,8 +1409,3 @@ function ArtifactPanel({ artifacts = [], selectedId = null, onSelect, onClose, o
 }
 
 export default ArtifactPanel;
-
-
-
-
-
