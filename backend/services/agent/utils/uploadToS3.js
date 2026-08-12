@@ -1,4 +1,4 @@
-import { Bucket$, PutObjectAclCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import {s3} from '../config/s3.js'
 
 export const uploadToS3 = async (filename, buffer , contentType) => {

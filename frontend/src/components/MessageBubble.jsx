@@ -1220,6 +1220,35 @@ function ArtifactCard({ artifact, onOpen }) {
 
 
 
+function DownloadIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
+async function downloadImage(src, filename = "image.png") {
+  try {
+    const res = await fetch(src);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    // fallback — open in new tab so the user can save manually
+    window.open(src, "_blank");
+  }
+}
+
+
 
 
 /* ------------------------- image grid ------------------------- */
@@ -1227,6 +1256,61 @@ function ArtifactCard({ artifact, onOpen }) {
 // Tavily can return images as plain URL strings, or (with
 // includeImageDescriptions) as { url, description } objects.
 // Handle both without crashing.
+// function ImageGrid({ images, onImageClick }) {
+//   if (!Array.isArray(images) || images.length === 0) return null;
+
+//   const valid = images
+//     .map((img) => {
+//       const src = typeof img === "string" ? img : img?.url;
+//       const alt = typeof img === "string" ? "" : (img?.description ?? "");
+//       return src ? { src, alt } : null;
+//     })
+//     .filter(Boolean);
+
+//   if (valid.length === 0) return null;
+
+//   // Single image gets a larger, more editorial treatment.
+//   const gridClass =
+//     valid.length === 1
+//       ? "grid grid-cols-1"
+//       : valid.length === 2
+//         ? "grid grid-cols-2 gap-2"
+//         : "grid grid-cols-2 sm:grid-cols-3 gap-2";
+
+//   return (
+//     <div className={`${gridClass} pt-1`}>
+//       {valid.map((img, idx) => (
+//         <button
+//           key={idx}
+//           type="button"
+//           onClick={() => onImageClick(img)}
+//           className="group relative block rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02] cursor-zoom-in"
+//         >
+//           <img
+//             src={img.src}
+//             alt={img.alt}
+//             loading="lazy"
+//             className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
+//               valid.length === 1 ? "h-56" : "h-32"
+//             }`}
+//             onError={(e) => {
+//               e.currentTarget.closest("button").style.display = "none";
+//             }}
+//           />
+//           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+//           {img.alt && (
+//             <span className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[10.5px] leading-snug text-white bg-gradient-to-t from-black/65 to-transparent line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
+//               {img.alt}
+//             </span>
+//           )}
+//         </button>
+//       ))}
+//     </div>
+//   );
+// }
+
+
+
 function ImageGrid({ images, onImageClick }) {
   if (!Array.isArray(images) || images.length === 0) return null;
 
@@ -1240,7 +1324,6 @@ function ImageGrid({ images, onImageClick }) {
 
   if (valid.length === 0) return null;
 
-  // Single image gets a larger, more editorial treatment.
   const gridClass =
     valid.length === 1
       ? "grid grid-cols-1"
@@ -1251,34 +1334,49 @@ function ImageGrid({ images, onImageClick }) {
   return (
     <div className={`${gridClass} pt-1`}>
       {valid.map((img, idx) => (
-        <button
+        <div
           key={idx}
-          type="button"
-          onClick={() => onImageClick(img)}
-          className="group relative block rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02] cursor-zoom-in"
+          className="group relative rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02]"
         >
-          <img
-            src={img.src}
-            alt={img.alt}
-            loading="lazy"
-            className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
-              valid.length === 1 ? "h-56" : "h-32"
-            }`}
-            onError={(e) => {
-              e.currentTarget.closest("button").style.display = "none";
+          <button
+            type="button"
+            onClick={() => onImageClick(img)}
+            className="block w-full cursor-zoom-in"
+          >
+            <img
+              src={img.src}
+              alt={img.alt}
+              loading="lazy"
+              className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
+                valid.length === 1 ? "h-56" : "h-32"
+              }`}
+              onError={(e) => {
+                e.currentTarget.closest("div").style.display = "none";
+              }}
+            />
+            <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadImage(img.src, `vortex-image-${idx + 1}.png`);
             }}
-          />
-          <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-          {img.alt && (
-            <span className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[10.5px] leading-snug text-white bg-gradient-to-t from-black/65 to-transparent line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
-              {img.alt}
-            </span>
-          )}
-        </button>
+            aria-label="Download image"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <DownloadIcon />
+          </button>
+        </div>
       ))}
     </div>
   );
 }
+
+
+
+
 
 /* ------------------------- image lightbox ------------------------- */
 
