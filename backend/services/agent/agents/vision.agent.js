@@ -47,6 +47,9 @@
 
 // }
 
+
+
+
 // import { getModel } from "../config/llmModels.js";
 // import axios from "axios";
 // import { getFromS3 } from "../utils/getFromS3.js";
@@ -133,6 +136,11 @@
 //   }
 // };
 
+
+
+
+
+
 import { getModel } from "../config/llmModels.js";
 import axios from "axios";
 import { getFromS3 } from "../utils/getFromS3.js";
@@ -218,7 +226,7 @@ ${state.prompt}
 
     return {
       ...state,
-      aiResponse: "Here's your generated image:",
+      aiResponse: "Generated image:",
       agent: "vision",
       images: [{ url: downloadUrl, description: "" }],
     };
@@ -233,3 +241,5 @@ ${state.prompt}
     };
   }
 };
+
+
