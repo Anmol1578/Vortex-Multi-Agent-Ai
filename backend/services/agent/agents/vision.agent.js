@@ -68,16 +68,25 @@ ${state.prompt}
 
     await uploadToS3(filename, buffer, "image/png");
 
-    const EXPIRY_SECONDS = 24 * 60;
+    const EXPIRY_SECONDS = 24 * 60 * 60;
     const downloadUrl = await getFromS3(filename, EXPIRY_SECONDS);
 
     console.log("[visionAgent] upload complete, signed URL:", downloadUrl);
 
     return {
       ...state,
-      aiResponse: "Generated image:",
       agent: "vision",
-      images: [{ url: downloadUrl, description: "" }],
+      aiResponse:
+        `## ✨ Image Generated\n\n` +
+        `Your image has been successfully created and is ready to view.\n\n` +
+        `🖼️ [Open / Download Image](${downloadUrl})\n\n` +
+        `_Hope you like it! Want to create another image ?_`,
+      images: [
+        {
+          url: downloadUrl,
+          description: "",
+        },
+      ],
     };
   } catch (error) {
     console.error("[visionAgent] failed:", error);

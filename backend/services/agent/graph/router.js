@@ -22,7 +22,13 @@ const AGENT_DESCRIPTIONS = `
   - Sports scores
   - Stock prices
   - Internet research
-  - Any request requiring web search or up-to-date information
+  - Finding information on the web
+  - Requests that require web search or up-to-date information
+
+    IMPORTANT:
+  - Do NOT use search when the user explicitly requests
+    creation of a PDF or PowerPoint.
+  - The requested output format takes priority over the topic.
 
 - coding
   Use for:
@@ -38,17 +44,38 @@ const AGENT_DESCRIPTIONS = `
 
 - pdf
   Use for:
-  - Reading PDF documents
+  - Creating a PDF
+  - Generating a PDF
+  - Making a PDF report
+  - Creating a downloadable PDF document
+  - Exporting content as PDF
+  - Turning information/research into a PDF
+  - Reading uploaded PDF documents
   - Summarizing PDFs
   - Extracting text from PDFs
   - Answering questions about uploaded PDFs
 
+    IMPORTANT:
+  - If the user asks to create, generate, make, export, or
+    produce a PDF, ALWAYS choose pdf.
+  - Even if the topic requires web research, pdf remains the
+    primary agent when the requested final output is a PDF.
+  - Example: "Create a PDF about NASA" -> pdf.
+  - Example: "NASA PDF" -> pdf.
+
+
 - ppt
   Use for:
   - Creating PowerPoint presentations
+  - Generating PPT/PPTX files
   - Editing presentations
   - Designing slide decks
   - Converting notes into presentation slides
+
+    IMPORTANT:
+  - If the user asks to create, generate, make, export, or
+    produce a PowerPoint/PPT/PPTX/presentation/slides,
+    ALWAYS choose ppt.
 
 - vision
   Use for:
@@ -70,6 +97,14 @@ Answer: {"agent": "search", "fallback": "chat"}
 Query: "Summarize this document" (attached file: application/pdf)
 Reasoning: acting on an uploaded PDF -> pdf agent, not generic summarization
 Answer: {"agent": "pdf", "fallback": "chat"}
+
+Query: "Create a PDF about NASA"
+Reasoning: explicit PDF output request -> pdf agent
+Answer: {"agent": "pdf", "fallback": "search"}
+
+Query: "Generate a PDF report about artificial intelligence"
+Reasoning: explicit PDF generation request -> pdf agent
+Answer: {"agent": "pdf", "fallback": "search"}
 
 Query: "Turn my notes into a 10-slide deck about Q3 results"
 Reasoning: explicit request to create a presentation

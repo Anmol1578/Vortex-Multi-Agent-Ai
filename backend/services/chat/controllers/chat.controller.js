@@ -372,14 +372,14 @@ export const saveMessage = async (req, res) => {
     // DEBUG
     // ============================================================
 
-    console.log(
-      "[saveMessage] normalized artifacts:",
-      JSON.stringify(
-        normalizedArtifacts,
-        null,
-        2
-      )
-    );
+    // console.log(
+    //   "[saveMessage] normalized artifacts:",
+    //   JSON.stringify(
+    //     normalizedArtifacts,
+    //     null,
+    //     2
+    //   )
+    // );
 
     // ============================================================
     // SAVE MESSAGE
