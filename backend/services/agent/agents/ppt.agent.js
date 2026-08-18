@@ -120,7 +120,8 @@ ${state.prompt}
         `Your **${data.slides?.length || 0}-slide deck** is ready. Here's what it covers:\n\n` +
         `${outline}\n\n` +
         `⏱️ **Generated in ${elapsedSec}s**\n\n` +
-        `🚀 [Open / Download Presentation](${downloadUrl})\n\n` +
+        `🚀 [Download Presentation](${downloadUrl})\n\n` +
+        `⚠️ **This download link will expire in 24 hours.** Please download your presentation before the link expires.\n\n` +
         `Hope this helps! Let me know if you'd like me to create another presentation.`,
     };
   } catch (error) {

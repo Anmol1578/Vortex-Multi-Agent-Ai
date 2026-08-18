@@ -18,6 +18,14 @@ const FONT = {
 
 const MARGIN = { top: 60, bottom: 55, left: 56, right: 56 };
 
+const sanitizeText = (str = "") =>
+  String(str)
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-") // hyphen/dash variants -> "-"
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes -> straight
+    .replace(/[\u201C\u201D]/g, '"') // curly double quotes -> straight
+    .replace(/\u2026/g, "...") // ellipsis -> three dots
+    .replace(/[\u00A0\u202F\u2009\u200A]/g, " "); // nbsp/narrow/thin space -> normal space
+
 export const generatePdf = (data = {}) =>
   new Promise((resolve, reject) => {
     try {
@@ -50,7 +58,7 @@ export const generatePdf = (data = {}) =>
         .font("Helvetica-Bold")
         .fontSize(FONT.title)
         .fillColor(COLOR.title)
-        .text(data.title || "Untitled Document", { width });
+        .text(sanitizeText(data.title) || "Untitled Document", { width });
 
       if (data.subtitle) {
         doc.moveDown(0.25);
@@ -58,7 +66,7 @@ export const generatePdf = (data = {}) =>
           .font("Helvetica")
           .fontSize(FONT.subtitle)
           .fillColor(COLOR.muted)
-          .text(data.subtitle, { width });
+          .text(sanitizeText(data.subtitle), { width });
       }
 
       doc.moveDown(0.5);
@@ -78,7 +86,7 @@ export const generatePdf = (data = {}) =>
           .font("Helvetica-Bold")
           .fontSize(FONT.heading)
           .fillColor(COLOR.heading)
-          .text(text || "", { width });
+          .text(sanitizeText(text), { width });
         doc.moveDown(0.25);
       };
 
@@ -87,7 +95,7 @@ export const generatePdf = (data = {}) =>
           .font("Helvetica")
           .fontSize(FONT.text)
           .fillColor(COLOR.text)
-          .text(text || "", { width, lineGap: 2 });
+          .text(sanitizeText(text), { width, lineGap: 2 });
         doc.moveDown(0.3);
       };
 
@@ -98,7 +106,7 @@ export const generatePdf = (data = {}) =>
             .font("Helvetica")
             .fontSize(FONT.text)
             .fillColor(COLOR.text)
-            .text(`${marker}  ${item}`, { width, lineGap: 2 });
+            .text(`${marker}  ${sanitizeText(item)}`, { width, lineGap: 2 });
         });
         doc.moveDown(0.3);
       };

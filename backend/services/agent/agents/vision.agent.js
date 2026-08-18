@@ -5,7 +5,8 @@ import { uploadToS3 } from "../utils/uploadToS3.js";
 
 export const visionAgent = async (state) => {
   try {
-    const llm = await getModel("image");
+    // const llm = await getModel("image");
+    const llm = getModel("vision");
 
     const res = await llm.invoke(`
 You are an elite AI image prompt engineer.
@@ -71,7 +72,7 @@ ${state.prompt}
     const EXPIRY_SECONDS = 24 * 60 * 60;
     const downloadUrl = await getFromS3(filename, EXPIRY_SECONDS);
 
-    console.log("[visionAgent] upload complete, signed URL:", downloadUrl);
+    console.log("[visionAgent] upload complete, signed URL generated");
 
     return {
       ...state,
@@ -80,7 +81,8 @@ ${state.prompt}
         `## ✨ Image Generated\n\n` +
         `Your image has been successfully created and is ready to view.\n\n` +
         `🖼️ [Open / Download Image](${downloadUrl})\n\n` +
-        `_Hope you like it! Want to create another image ?_`,
+        `⏳ _Link expires in 24 hours._\n\n` +
+        `_Hope you like it! Want to create another image?_`,
       images: [
         {
           url: downloadUrl,

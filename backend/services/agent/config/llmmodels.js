@@ -31,27 +31,73 @@ const groq = new ChatGroq({
 
 const gemini = new ChatGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY,
-  model: "gemini-2.5-flash",
+  model: "gemini-3.6-flash",
 });
 
 const openrouter = new ChatOpenRouter({
   model: "deepseek/deepseek-chat",
   temperature: 0,
-  maxTokens:  4000,
+  maxTokens:  5000,
 });
+
+// export const getModel = (agent) => {
+//   switch (agent) {
+//     case "intent":
+//       return groq;
+//     case "chat":
+//     case "search":
+//       return groq;
+//     case "coding":
+//       return openrouter;
+//     case "gemini":
+//       return gemini;
+//     default:
+//       return groq;
+//   }
+// };
+
+
+// export const getModel = (agent) => {
+//   switch (agent) {
+//     case "intent":
+//       return groq;
+//     case "chat":
+//     case "search":
+//       return groq;
+//     case "coding":
+//       return openrouter;
+//     case "pdf":
+//     case "ppt":
+//       return groq; // avoids OpenRouter credit limits; gpt-oss-120b handles structured JSON fine
+//     case "gemini":
+//       return gemini;
+//     default:
+//       return groq;
+//   }
 
 export const getModel = (agent) => {
   switch (agent) {
     case "intent":
       return groq;
+
     case "chat":
     case "search":
       return groq;
+
     case "coding":
       return openrouter;
+
+    case "pdf":
+    case "ppt":
+      return groq;
+
+    case "image":
+    case "vision":
     case "gemini":
       return gemini;
+
     default:
       return groq;
   }
 };
+
