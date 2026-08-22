@@ -215,7 +215,7 @@ export const updateConversation = async (req, res) => {
           title,
         },
         {
-          new: true,
+            returnDocument: "after",
         }
       );
 
