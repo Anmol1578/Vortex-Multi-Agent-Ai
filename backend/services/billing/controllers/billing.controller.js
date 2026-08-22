@@ -1,5 +1,5 @@
 import { PLANS } from "../config/Plans.js";
-import { razorpay } from "../config/razorpay.js";
+import razorpay from "../config/razorpay.js";
 import Payment from "../models/payment.model.js";
 
 export const createOrder = async (req, res) => {
@@ -57,5 +57,17 @@ export const verifyPayment = async (req, res) => {
     payment.status = "paid";
     payment.paymentId = razorpay_payment_id;
     await payment.save();
-  } catch (error) {}
+
+    await axios.post(`${process.env.AUTH_SERVICE_URL}/update-plan`, {
+      userId: payment.userId,
+      plan: payment.plan,
+      credits: payment.credits,
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Payment verified and plan updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: `verifyPayment error: ${error}` });
+  }
 };
