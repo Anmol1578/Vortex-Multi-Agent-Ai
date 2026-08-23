@@ -196,7 +196,13 @@ function Sidebar({ onNewSession }) {
     console.log("Upgrade clicked");
   };
 
-  const planLabel = userData?.plan === "pro" ? "Pro Plan" : "Free Plan";
+const PLAN_LABELS = {
+  free: "Free Plan",
+  starter: "Starter Plan",
+  pro: "Pro Plan",
+};
+
+const planLabel = PLAN_LABELS[userData?.plan] || "Free Plan";
 
   return (
     <>

@@ -7,15 +7,15 @@
 
 //     <AnimatePresence>
 //         {open && <>   <motion.div
-    
+
 //     />
 
 //     <motion.div>
 
 //     </motion.div>
-    
+
 //     </>
-    
+
 //     }
 
 //     </AnimatePresence>
@@ -25,6 +25,8 @@
 // export default BillingDrawer
 
 import React, { useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
+import { setUserdata } from "../redux/userSlice.js";
 import { AnimatePresence, motion } from "motion/react";
 import {
   X,
@@ -42,14 +44,54 @@ import { verifyPayment } from "../features/verifyPayment.js";
 // Mirrors backend/config/Plans.js pricing + credits. Description/icon/features
 // are frontend-only display concerns, so they live here rather than the API.
 const PLANS = {
-  free: { id: "free", name: "Free Plan", price: 0, credits: 100, description: "Good for getting started" },
-  starter: { id: "starter", name: "Starter Plan", price: 399, credits: 500, description: "For regular AI workflows" },
-  pro: { id: "pro", name: "Pro Plan", price: 999, credits: 1200, description: "For serious AI workflows" },
+  free: {
+    id: "free",
+    name: "Free Plan",
+    price: 0,
+    credits: 100,
+    description: "Good for getting started",
+  },
+  starter: {
+    id: "starter",
+    name: "Starter Plan",
+    price: 399,
+    credits: 500,
+    description: "For regular AI workflows",
+  },
+  pro: {
+    id: "pro",
+    name: "Pro Plan",
+    price: 999,
+    credits: 1200,
+    description: "For serious AI workflows",
+  },
 };
 
 const PLAN_LIST = [
-  { ...PLANS.starter, icon: Zap, popular: false, features: ["500 AI credits", "Higher model limits", "Priority processing", "File generation", "Image generation"] },
-  { ...PLANS.pro, icon: Sparkles, popular: true, features: ["1200 AI credits", "Higher model limits", "Priority processing", "Advanced agent workflows", "More file & image generation"] },
+  {
+    ...PLANS.starter,
+    icon: Zap,
+    popular: false,
+    features: [
+      "500 AI credits",
+      "Higher model limits",
+      "Priority processing",
+      "File generation",
+      "Image generation",
+    ],
+  },
+  {
+    ...PLANS.pro,
+    icon: Sparkles,
+    popular: true,
+    features: [
+      "1200 AI credits",
+      "Higher model limits",
+      "Priority processing",
+      "Advanced agent workflows",
+      "More file & image generation",
+    ],
+  },
 ];
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -64,13 +106,17 @@ const rise = {
 };
 
 function UsageMeter({ used, total, remaining }) {
-//   const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
-const pct = total > 0 ? Math.min((remaining / total) * 100, 100) : 0;
+  //   const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+  const pct = total > 0 ? Math.min((remaining / total) * 100, 100) : 0;
   return (
     <motion.div variants={rise} className="mt-5">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-black/65">Monthly credits</span>
-        <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35">{used} / {total}</span>
+        <span className="text-xs font-medium text-black/65">
+          Monthly credits
+        </span>
+        <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35">
+          {used} / {total}
+        </span>
       </div>
       <div className="h-1.5 rounded-full bg-black/[0.06] overflow-hidden">
         <motion.div
@@ -80,12 +126,21 @@ const pct = total > 0 ? Math.min((remaining / total) * 100, 100) : 0;
           className="h-full rounded-full bg-gradient-to-r from-[#1E7A56] to-[#5EEAD4]"
         />
       </div>
-      <p className="text-[11px] text-black/35 mt-2">{remaining} credits remaining this month</p>
+      <p className="text-[11px] text-black/35 mt-2">
+        {remaining} credits remaining this month
+      </p>
     </motion.div>
   );
 }
 
-function PlanCard({ plan, isCurrent, isSelected, isLoading, onSelect, onUpgrade }) {
+function PlanCard({
+  plan,
+  isCurrent,
+  isSelected,
+  isLoading,
+  onSelect,
+  onUpgrade,
+}) {
   const Icon = plan.icon;
   return (
     <motion.div
@@ -95,14 +150,21 @@ function PlanCard({ plan, isCurrent, isSelected, isLoading, onSelect, onUpgrade 
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       className={`relative rounded-xl border bg-white overflow-hidden cursor-pointer transition-colors duration-200 ${
-        isSelected ? "border-[#1E7A56]/40 shadow-md" : "border-black/[0.08] shadow-sm hover:border-black/[0.15]"
+        isSelected
+          ? "border-[#1E7A56]/40 shadow-md"
+          : "border-black/[0.08] shadow-sm hover:border-black/[0.15]"
       }`}
     >
       {plan.popular && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 400, damping: 15 }}
+          transition={{
+            delay: 0.4,
+            type: "spring",
+            stiffness: 400,
+            damping: 15,
+          }}
           className="absolute top-3 right-3 px-2 py-1 rounded-md bg-[#1E7A56]/10 text-[#1E7A56] text-[9px] font-semibold tracking-wide"
         >
           MOST POPULAR
@@ -115,19 +177,25 @@ function PlanCard({ plan, isCurrent, isSelected, isLoading, onSelect, onUpgrade 
             <Icon size={16} className="text-[#5EEAD4]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-semibold text-black/85">{plan.name}</h3>
+            <h3 className="text-[15px] font-semibold text-black/85">
+              {plan.name}
+            </h3>
             <p className="text-[11px] text-black/40">{plan.description}</p>
           </div>
         </div>
 
         <div className="mt-5 flex items-end gap-1">
-          <span className="text-2xl font-semibold text-black/85">₹{plan.price}</span>
+          <span className="text-2xl font-semibold text-black/85">
+            ₹{plan.price}
+          </span>
           <span className="text-[11px] text-black/35 mb-1">/ 30 days</span>
         </div>
 
         <div className="mt-4 rounded-lg bg-[#1E7A56]/[0.045] border border-[#1E7A56]/10 px-3 py-2.5 flex items-center justify-between">
           <span className="text-xs text-black/50">Monthly credits</span>
-          <span className="text-xs font-semibold text-[#1E7A56]">{plan.credits.toLocaleString()}</span>
+          <span className="text-xs font-semibold text-[#1E7A56]">
+            {plan.credits.toLocaleString()}
+          </span>
         </div>
 
         <div className="mt-5 space-y-2.5">
@@ -145,23 +213,46 @@ function PlanCard({ plan, isCurrent, isSelected, isLoading, onSelect, onUpgrade 
           disabled={isCurrent || isLoading}
           whileHover={!isCurrent ? { scale: 1.015 } : {}}
           whileTap={!isCurrent ? { scale: 0.98 } : {}}
-          onClick={(e) => { e.stopPropagation(); onUpgrade(plan.id); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUpgrade(plan.id);
+          }}
           className={`mt-5 w-full flex items-center justify-center gap-2 rounded-lg text-sm font-medium py-2.5 transition-colors duration-300 ${
-            isCurrent ? "bg-black/[0.05] text-black/35 cursor-not-allowed" : "bg-[#14151A] text-white hover:bg-[#1E7A56]"
+            isCurrent
+              ? "bg-black/[0.05] text-black/35 cursor-not-allowed"
+              : "bg-[#14151A] text-white hover:bg-[#1E7A56]"
           }`}
         >
           <AnimatePresence mode="wait" initial={false}>
             {isLoading ? (
-              <motion.span key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+              <motion.span
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
+              >
                 <Loader2 size={15} className="animate-spin" /> Processing...
               </motion.span>
             ) : isCurrent ? (
-              <motion.span key="current" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.span
+                key="current"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 Current Plan
               </motion.span>
             ) : (
-              <motion.span key="upgrade" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                Upgrade to {plan.name.replace(" Plan", "")} <ArrowRight size={15} />
+              <motion.span
+                key="upgrade"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
+              >
+                Upgrade to {plan.name.replace(" Plan", "")}{" "}
+                <ArrowRight size={15} />
               </motion.span>
             )}
           </AnimatePresence>
@@ -188,7 +279,9 @@ function StatusBanner({ status }) {
     >
       <div className="flex items-center gap-2">
         {status.type === "success" && <ShieldCheck size={15} />}
-        {status.type === "processing" && <Loader2 size={15} className="animate-spin" />}
+        {status.type === "processing" && (
+          <Loader2 size={15} className="animate-spin" />
+        )}
         <span>{status.message}</span>
       </div>
     </motion.div>
@@ -200,10 +293,18 @@ function BillingDrawer({ open, onClose, userData }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
 
-  const currentPlanId = userData?.plan || "free";
-  const currentPlan = useMemo(() => PLANS[currentPlanId] || PLANS.free, [currentPlanId]);
+  const dispatch = useDispatch();
 
-  const usedCredits = Math.max((userData?.totalCredits ?? 0) - (userData?.credits ?? 0), 0);
+  const currentPlanId = userData?.plan || "free";
+  const currentPlan = useMemo(
+    () => PLANS[currentPlanId] || PLANS.free,
+    [currentPlanId],
+  );
+
+  const usedCredits = Math.max(
+    (userData?.totalCredits ?? 0) - (userData?.credits ?? 0),
+    0,
+  );
   const totalCredits = userData?.totalCredits ?? currentPlan.credits;
   const remainingCredits = userData?.credits ?? totalCredits;
 
@@ -212,7 +313,10 @@ function BillingDrawer({ open, onClose, userData }) {
     if (!plan || plan.price === 0) return;
 
     if (!userData?.userId) {
-      setPaymentStatus({ type: "error", message: "User information is missing." });
+      setPaymentStatus({
+        type: "error",
+        message: "User information is missing.",
+      });
       return;
     }
 
@@ -221,7 +325,10 @@ function BillingDrawer({ open, onClose, userData }) {
 
     try {
       // createOrder returns null on any failed request (invalid plan, server error, etc).
-      const orderData = await createOrder({ plan: planId, userId: userData.userId });
+      const orderData = await createOrder({
+        plan: planId,
+        userId: userData.userId,
+      });
       if (!orderData?.order) throw new Error("Failed to create payment order");
 
       const { order, plan: serverPlan } = orderData;
@@ -233,11 +340,17 @@ function BillingDrawer({ open, onClose, userData }) {
         name: "Vortex AI",
         description: `${serverPlan.name} - ${serverPlan.credits} credits`,
         order_id: order.id,
-        prefill: { name: userData?.name || userData?.displayName || "", email: userData?.email || "" },
+        prefill: {
+          name: userData?.name || userData?.displayName || "",
+          email: userData?.email || "",
+        },
         theme: { color: "#1E7A56" },
         modal: { ondismiss: () => setLoadingPlan(null) },
         handler: async (response) => {
-          setPaymentStatus({ type: "processing", message: "Verifying payment..." });
+          setPaymentStatus({
+            type: "processing",
+            message: "Verifying payment...",
+          });
 
           console.log("Payment response:", response);
 
@@ -250,10 +363,27 @@ function BillingDrawer({ open, onClose, userData }) {
             userData.userId,
           );
 
+          // if (!verifyData) {
+          //   setPaymentStatus({ type: "error", message: "Payment verification failed." });
+          //   setLoadingPlan(null);
+          //   return;
+          // }
+
+          // setPaymentStatus({ type: "success", message: verifyData.message });
+          // setLoadingPlan(null);
+          // setTimeout(onClose, 1800);
+
           if (!verifyData) {
-            setPaymentStatus({ type: "error", message: "Payment verification failed." });
+            setPaymentStatus({
+              type: "error",
+              message: "Payment verification failed.",
+            });
             setLoadingPlan(null);
             return;
+          }
+
+          if (verifyData.user) {
+            dispatch(setUserdata(verifyData.user));
           }
 
           setPaymentStatus({ type: "success", message: verifyData.message });
@@ -263,14 +393,21 @@ function BillingDrawer({ open, onClose, userData }) {
       });
 
       razorpay.on("payment.failed", (response) => {
-        setPaymentStatus({ type: "error", message: response?.error?.description || "Payment failed. Please try again." });
+        setPaymentStatus({
+          type: "error",
+          message:
+            response?.error?.description || "Payment failed. Please try again.",
+        });
         setLoadingPlan(null);
       });
 
       razorpay.open();
     } catch (error) {
       console.error("Upgrade error:", error);
-      setPaymentStatus({ type: "error", message: error.message || "Something went wrong. Please try again." });
+      setPaymentStatus({
+        type: "error",
+        message: error.message || "Something went wrong. Please try again.",
+      });
       setLoadingPlan(null);
     }
   };
@@ -301,8 +438,12 @@ function BillingDrawer({ open, onClose, userData }) {
                   <CreditCard size={17} className="text-[#1E7A56]" />
                 </div>
                 <div>
-                  <h2 className="text-[15px] font-semibold text-black/85">Billing & Plans</h2>
-                  <p className="text-[10px] text-black/40 font-[IBM_Plex_Mono,monospace] tracking-wide">ACCOUNT / BILLING</p>
+                  <h2 className="text-[15px] font-semibold text-black/85">
+                    Billing & Plans
+                  </h2>
+                  <p className="text-[10px] text-black/40 font-[IBM_Plex_Mono,monospace] tracking-wide">
+                    ACCOUNT / BILLING
+                  </p>
                 </div>
               </div>
               <button
@@ -315,26 +456,47 @@ function BillingDrawer({ open, onClose, userData }) {
             </div>
 
             {/* Scrollable content — one stagger container drives everything below */}
-            <motion.div variants={container} initial="hidden" animate="show" className="flex-1 overflow-y-auto p-5">
+            <motion.div
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="flex-1 overflow-y-auto p-5"
+            >
               {/* Current plan */}
-              <motion.div variants={rise} className="relative overflow-hidden rounded-xl border border-[#1E7A56]/20 bg-[#1E7A56]/[0.055] p-4">
+              <motion.div
+                variants={rise}
+                className="relative overflow-hidden rounded-xl border border-[#1E7A56]/20 bg-[#1E7A56]/[0.055] p-4"
+              >
                 <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-[#1E7A56]/10 blur-3xl" />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-[IBM_Plex_Mono,monospace] uppercase tracking-[0.16em] text-[#1E7A56]/70">Current plan</span>
-                    <span className="px-2 py-1 rounded-md bg-[#1E7A56]/10 text-[#1E7A56] text-[10px] font-medium">ACTIVE</span>
+                    <span className="text-[10px] font-[IBM_Plex_Mono,monospace] uppercase tracking-[0.16em] text-[#1E7A56]/70">
+                      Current plan
+                    </span>
+                    <span className="px-2 py-1 rounded-md bg-[#1E7A56]/10 text-[#1E7A56] text-[10px] font-medium">
+                      ACTIVE
+                    </span>
                   </div>
                   <div className="flex items-end justify-between">
                     <div>
-                      <h3 className="text-xl font-semibold text-black/85">{currentPlan.name}</h3>
-                      <p className="text-xs text-black/40 mt-1">{currentPlan.description || "Your current Vortex AI plan"}</p>
+                      <h3 className="text-xl font-semibold text-black/85">
+                        {currentPlan.name}
+                      </h3>
+                      <p className="text-xs text-black/40 mt-1">
+                        {currentPlan.description ||
+                          "Your current Vortex AI plan"}
+                      </p>
                     </div>
                     <Sparkles size={21} className="text-[#1E7A56]" />
                   </div>
                 </div>
               </motion.div>
 
-              <UsageMeter used={usedCredits} total={totalCredits} remaining={remainingCredits} />
+              <UsageMeter
+                used={usedCredits}
+                total={totalCredits}
+                remaining={remainingCredits}
+              />
 
               {/* Plans */}
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -357,26 +519,39 @@ function BillingDrawer({ open, onClose, userData }) {
 
               {/* Billing info */}
               <motion.div variants={rise} className="mt-5">
-                <p className="text-[10px] font-[IBM_Plex_Mono,monospace] font-semibold uppercase tracking-[0.16em] text-[#1E7A56]/70 mb-3">Billing</p>
+                <p className="text-[10px] font-[IBM_Plex_Mono,monospace] font-semibold uppercase tracking-[0.16em] text-[#1E7A56]/70 mb-3">
+                  Billing
+                </p>
                 <div className="rounded-lg bg-black/[0.025] border border-black/[0.06] divide-y divide-black/[0.06]">
                   <div className="px-3 py-3 flex items-center justify-between">
                     <span className="text-xs text-black/50">Billing cycle</span>
-                    <span className="text-xs font-medium text-black/70">30 days</span>
+                    <span className="text-xs font-medium text-black/70">
+                      30 days
+                    </span>
                   </div>
                   <div className="px-3 py-3 flex items-center justify-between">
                     <span className="text-xs text-black/50">Selected plan</span>
-                    <span className="text-xs font-medium text-black/70">{PLANS[selectedPlan]?.name}</span>
+                    <span className="text-xs font-medium text-black/70">
+                      {PLANS[selectedPlan]?.name}
+                    </span>
                   </div>
                   <div className="px-3 py-3 flex items-center justify-between">
                     <span className="text-xs text-black/50">Payment</span>
-                    <span className="text-xs font-medium text-black/40">Razorpay</span>
+                    <span className="text-xs font-medium text-black/40">
+                      Razorpay
+                    </span>
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div variants={rise} className="flex items-center justify-center gap-1.5 mt-5">
+              <motion.div
+                variants={rise}
+                className="flex items-center justify-center gap-1.5 mt-5"
+              >
                 <ShieldCheck size={12} className="text-black/30" />
-                <p className="text-[10px] text-black/30">Secure payments powered by Razorpay</p>
+                <p className="text-[10px] text-black/30">
+                  Secure payments powered by Razorpay
+                </p>
               </motion.div>
             </motion.div>
 
