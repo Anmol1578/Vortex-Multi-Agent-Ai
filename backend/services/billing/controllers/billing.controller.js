@@ -15,6 +15,15 @@ export const createOrder = async (req, res) => {
       return res.status(404).json({ message: "Invalid plan selected" });
     }
 
+        const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.plan === selectedPlan.id) {
+      return res.status(400).json({ message: "You are already subscribed to this plan" });
+    }
+
+
     const order = await razorpay.orders.create({
       amount: selectedPlan.price * 100, // Amount in paise
       currency: "INR",
@@ -37,40 +46,81 @@ export const createOrder = async (req, res) => {
   }
 };
 
-export const verifyPayment = async (req, res) => {
+// export const verifyPayment = async (req, res) => {
+//   try {
+//     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+//       req.body;
+
+//     const generated_signature = crypto
+//       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//       .update(razorpay_order_id + "|" + razorpay_payment_id)
+//       .digest("hex");
+
+//     if (generated_signature !== razorpay_signature) {
+//       return res.status(400).json({ message: "Payment verification failed" });
+//     }
+
+//     const payment = await Payment.findOne({ orderId: razorpay_order_id });
+
+//     if (!payment) {
+//       return res.status(404).json({ message: "Payment record not found" });
+//     }
+
+//     payment.status = "paid";
+//     payment.paymentId = razorpay_payment_id;
+//     await payment.save();
+
+//     await axios.post(`${process.env.AUTH_SERVICE_URL}/update-plan`, {
+//       userId: payment.userId,
+//       plan: payment.plan,
+//       credits: payment.credits,
+//     });
+
+//     return res
+//       .status(200)
+//       .json({ message: "Payment verified and plan updated successfully" });
+//   } catch (error) {
+//     return res.status(500).json({ message: `verifyPayment error: ${error}` });
+//   }
+// };
+
+
+export const updateUserPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
-
-    const generated_signature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
-      .digest("hex");
-
-    if (generated_signature !== razorpay_signature) {
-      return res.status(400).json({ message: "Payment verification failed" });
+    const { plan, credits, userId } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const payment = await Payment.findOne({ orderId: razorpay_order_id });
+    user.plan = plan;
+    user.credits = credits;       // reset to new plan's amount, not additive
+    user.totalCredits = credits;  // same
+    // Set plan expiration to 30 days from now
+    user.planExiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await user.save();
 
-    if (!payment) {
-      return res.status(404).json({ message: "Payment record not found" });
-    }
+    const session = req.cookies?.session;
+    await redis.set(
+      `session:${session}`,
+      JSON.stringify({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        plan: user.plan,
+        credits: user.credits,
+        totalCredits: user.totalCredits,
+        planExiresAt: user.planExiresAt,
+      }),
+      "EX",
+      7 * 24 * 60 * 60,
+    );
 
-    payment.status = "paid";
-    payment.paymentId = razorpay_payment_id;
-    await payment.save();
-
-    await axios.post(`${process.env.AUTH_SERVICE_URL}/update-plan`, {
-      userId: payment.userId,
-      plan: payment.plan,
-      credits: payment.credits,
-    });
-
-    return res
-      .status(200)
-      .json({ message: "Payment verified and plan updated successfully" });
+    return res.status(200).json({ success: true });
   } catch (error) {
-    return res.status(500).json({ message: `verifyPayment error: ${error}` });
+    res
+      .status(500)
+      .json({ message: `Error updating user payment: ${error.message}` });
   }
 };
