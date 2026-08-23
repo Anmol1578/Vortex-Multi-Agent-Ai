@@ -1,3 +1,6 @@
+import crypto from "crypto";
+import axios from "axios";
+
 import { PLANS } from "../config/Plans.js";
 import razorpay from "../config/razorpay.js";
 import Payment from "../models/payment.model.js";
@@ -48,7 +51,7 @@ export const verifyPayment = async (req, res) => {
       return res.status(400).json({ message: "Payment verification failed" });
     }
 
-    const payment = await Payment.findOne({ orderid: razorpay_order_id });
+    const payment = await Payment.findOne({ orderId: razorpay_order_id });
 
     if (!payment) {
       return res.status(404).json({ message: "Payment record not found" });
