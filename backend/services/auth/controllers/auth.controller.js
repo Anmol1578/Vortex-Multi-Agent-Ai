@@ -36,7 +36,7 @@ export const login = async (req, res) => {
         plan: user.plan,
         credits: user.credits,
         totalCredits: user.totalCredits,
-        planExiresAt: user.planExiresAt,
+        planExpiresAt: user.planExpiresAt,
       }),
       "EX",
       7 * 24 * 60 * 60,
@@ -59,7 +59,7 @@ export const login = async (req, res) => {
         plan: user.plan,
         credits: user.credits,
         totalCredits: user.totalCredits,
-        planExiresAt: user.planExiresAt,
+        planExpiresAt: user.planExpiresAt,
       },
     });
   } catch (error) {
@@ -87,6 +87,106 @@ export const logout = async (req, res) => {
   }
 };
 
+
+// WORKING AND TESTING SUCCESSFULLY
+
+// export const updateUserPayment = async (req, res) => {
+//   try {
+//     const { plan, credits, userId } = req.body;
+
+//     if (!plan || credits === undefined || !userId) {
+//       return res.status(400).json({
+//         message: "plan, credits and userId are required",
+//       });
+//     }
+
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//       });
+//     }
+
+//     // Update plan
+//     user.plan = plan;
+
+//     // Reset credits for the new plan
+//     user.credits = credits;
+//     user.totalCredits = credits;
+
+//     // Plan expires in 30 days
+//     user.planExpiresAt = new Date(
+//       Date.now() + 30 * 24 * 60 * 60 * 1000
+//     );
+
+//     await user.save();
+
+//     // Update Redis session
+//     const session = req.cookies?.session;
+
+//     if (session) {
+//       await redis.set(
+//         `session:${session}`,
+//         JSON.stringify({
+//           userId: user._id,
+//           name: user.name,
+//           email: user.email,
+//           avatar: user.avatar,
+//           plan: user.plan,
+//           credits: user.credits,
+//           totalCredits: user.totalCredits,
+//           planExpiresAt: user.planExpiresAt,
+//         }),
+//         "EX",
+//         7 * 24 * 60 * 60
+//       );
+//     }
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "User plan updated successfully",
+//       user: {
+//         userId: user._id,
+//         name: user.name,
+//         email: user.email,
+//         avatar: user.avatar,
+//         plan: user.plan,
+//         credits: user.credits,
+//         totalCredits: user.totalCredits,
+//         planExpiresAt: user.planExpiresAt,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("updateUserPayment error:", error);
+
+//     return res.status(500).json({
+//       message: `Error updating user payment: ${error.message}`,
+//     });
+//   }
+// };
+
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      plan: user.plan,
+      credits: user.credits,
+      totalCredits: user.totalCredits,
+      planExpiresAt: user.planExpiresAt,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `Error fetching user: ${error.message}` });
+  }
+};
+
 export const updateUserPayment = async (req, res) => {
   try {
     const { plan, credits, userId } = req.body;
@@ -96,10 +196,9 @@ export const updateUserPayment = async (req, res) => {
     }
 
     user.plan = plan;
-    user.credits += credits;
-    user.totalCredits += credits;
-    // Set plan expiration to 30 days from now
-    user.planExiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    user.credits = credits;
+    user.totalCredits = credits;
+    user.planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await user.save();
 
     const session = req.cookies?.session;
@@ -113,16 +212,27 @@ export const updateUserPayment = async (req, res) => {
         plan: user.plan,
         credits: user.credits,
         totalCredits: user.totalCredits,
-        planExiresAt: user.planExiresAt,
+        planExpiresAt: user.planExpiresAt,
       }),
       "EX",
       7 * 24 * 60 * 60,
     );
 
-    return res.status(200).json({ success: true });
+    // return the updated user so callers (billing service) can pass it along
+    return res.status(200).json({
+      success: true,
+      user: {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        plan: user.plan,
+        credits: user.credits,
+        totalCredits: user.totalCredits,
+        planExpiresAt: user.planExpiresAt,  
+      },
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `Error updating user payment: ${error.message}` });
+    res.status(500).json({ message: `Error updating user payment: ${error.message}` });
   }
 };
