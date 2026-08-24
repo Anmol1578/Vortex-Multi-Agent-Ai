@@ -365,6 +365,7 @@ function ChatInput({
       agent: mode,
     };
 
+    try {
     const data = await sendMessage(payload);
 
     const replyContent =
@@ -381,20 +382,32 @@ function ChatInput({
         artifacts: data?.artifacts,
       }),
     );
+     } catch (error) {
+    const status = error.response?.status;
+    const errData = error.response?.data;
+
+    const isCreditsError = status === 402 || errData?.code === "INSUFFICIENT_CREDITS";
+
+    dispatch(
+      addMessages({
+        role: "agent",
+        agent,
+        content: isCreditsError
+          ? `⚡ Not enough credits — you have ${errData?.credits} Credits, this needs ${errData?.requiredCredits} Credits. Upgrade your plan to continue.`
+          : "Something went wrong. Please try again.",
+        isError: true,
+isCreditsError,
+      }),
+    );
+  } finally {
     setThinking(false);
     setActiveAgent(null);
+    }
   };
 
   return (
     <div className="p-5 border-t border-black/[0.07] bg-white/25 backdrop-blur-xl z-10 overflow-hidden">
-      {/*
-        NOTE: previously this wrapper used `-translate-x-[5%]` to nudge the
-        input for the future artifact panel. `transform` shifts the box
-        visually without changing layout, so it could visually slide left
-        over the sidebar's edge whenever the sidebar was open at a wider
-        (custom) size. Using width/padding instead keeps it layout-safe —
-        it will never overlap a sibling like the sidebar.
-      */}
+
       <div className="max-w-[820px] w-full mx-auto px-1 box-border">
         <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar">
           {MODES.map((m) => (

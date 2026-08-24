@@ -106,8 +106,7 @@ const rise = {
 };
 
 function UsageMeter({ used, total, remaining }) {
-  //   const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
-  const pct = total > 0 ? Math.min((remaining / total) * 100, 100) : 0;
+    const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
   return (
     <motion.div variants={rise} className="mt-5">
       <div className="flex items-center justify-between mb-2">
