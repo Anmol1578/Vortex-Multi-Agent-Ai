@@ -31,6 +31,8 @@ ${cleaned}`;
 }
 
 export const chatAgent = async (state) => {
+
+
   const llm = await getModel("chat");
 
   const history = await getMemory(state.conversationId);
@@ -96,10 +98,10 @@ ${searchInstructions}
   const messages = [new SystemMessage(systemPrompt)];
 
   history.forEach((msg) => {
-    if (msg.role == "user") {
+    if (msg.role === "user") {
       messages.push(new HumanMessage(msg.content));
     }
-    if (msg.role == "assistant") {
+    if (msg.role === "assistant") {
       messages.push(new AIMessage(msg.content));
     }
   });
