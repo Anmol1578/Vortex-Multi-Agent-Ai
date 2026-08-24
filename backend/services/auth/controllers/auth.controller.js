@@ -1,7 +1,6 @@
 import { getAuth } from "firebase-admin/auth";
 import { app } from "../config/firebase.js";
 import User from "../models/user.model.js";
-import { createConnection } from "mongoose";
 import crypto from "crypto";
 import redis from "../../../shared/redis/redis.js";
 

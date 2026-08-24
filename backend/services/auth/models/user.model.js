@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 100,
     },
-    planExiresAt: Date,
+   planExpiresAt: Date,
   },
   {
     timestamps: true,
