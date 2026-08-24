@@ -557,8 +557,10 @@ export const agent = async (req, res) => {
       agent: result?.agent,
       images,
       artifacts,
-      credits: result?.credits,
-      deductedCredits: result?.deductedCredits,
+      // credits: result?.credits,
+      // deductedCredits: result?.deductedCredits,
+        credits: result?.creditDeduction?.credits,
+  deductedCredits: result?.creditDeduction?.deductedCredits,
     });
   } catch (error) {
     console.error("[agent controller]", error);
