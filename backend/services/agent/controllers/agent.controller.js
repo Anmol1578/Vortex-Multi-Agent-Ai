@@ -65,6 +65,8 @@
 //   }
 // };
 
+
+
 // 24 AUGUST
 
 // import axios from "axios";
@@ -330,6 +332,140 @@
 // };
 
 
+
+// import axios from "axios";
+// import { graph } from "../graph/graph.js";
+// import { addMessage } from "../config/memory.js";
+
+// export const agent = async (req, res) => {
+//   const { prompt, conversationId, agent: agentType } = req.body;
+
+//   const userId = req.headers["x-user-id"];
+
+//   try {
+//     if (!prompt || !conversationId || !userId) {
+//       return res.status(400).json({
+//         success: false,
+//         code: "INVALID_REQUEST",
+//         message: "prompt, conversationId and userId are required",
+//       });
+//     }
+
+//     if (!agentType) {
+//       return res.status(400).json({
+//         success: false,
+//         code: "AGENT_REQUIRED",
+//         message: "agent is required",
+//       });
+//     }
+
+//      /*
+//      * Save user message to memory.
+//      */
+//     await addMessage(conversationId, "user", prompt);
+
+//     /*
+//      * Execute LangGraph.
+//      */
+//     const result = await graph.invoke({
+//       prompt,
+//       conversationId,
+//       agent: agentType,
+//       userId,
+//     });
+
+//     const response = result?.aiResponse;
+
+//     if (!response) {
+//       console.error("[agent controller] agent returned no aiResponse", {
+//         agentType,
+//         routedAgent: result?.agent,
+//         conversationId,
+//         userId,
+//       });
+
+//       return res.status(500).json({
+//         success: false,
+//         code: "NO_AGENT_RESPONSE",
+//         message: "Agent produced no response.",
+//       });
+//     }
+
+//     const images = result?.images ?? [];
+//     const artifacts = result?.artifacts ?? [];
+
+//     /*
+//      * Save assistant response to memory.
+//      */
+//     await addMessage(conversationId, "assistant", response);
+
+//     /*
+//      * Save user message to Chat Service.
+//      */
+//     await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
+//       conversationId,
+//       role: "user",
+//       content: prompt,
+//     });
+
+//     /*
+//      * Save assistant message to Chat Service.
+//      */
+//     await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
+//       conversationId,
+//       role: "assistant",
+//       content: response,
+//       images,
+//       artifacts,
+//     });
+
+//     /*
+//      * Return response + credits.
+//      */
+//     return res.status(200).json({
+//       success: true,
+//       content: response,
+//       agent: result?.agent,
+//       images,
+//       artifacts,
+//       credits: result?.credits,
+//       deductedCredits: result?.deductedCredits,
+//     });
+
+//   } catch (error) {
+//     console.error("[agent controller]", error);
+
+//     /*
+//      * ------------------------------------------------------------
+//      * INSUFFICIENT CREDITS
+//      * ------------------------------------------------------------
+//      */
+//     if (error.code === "INSUFFICIENT_CREDITS") {
+//       return res.status(402).json({
+//         success: false,
+//         code: "INSUFFICIENT_CREDITS",
+//         message: "You don't have enough credits to use this agent.",
+//         credits: error.credits,
+//         requiredCredits: error.requiredCredits,
+//         agent: agentType,
+//       });
+//     }
+
+//     /*
+//      * ------------------------------------------------------------
+//      * OTHER AGENT ERRORS
+//      * ------------------------------------------------------------
+//      */
+//     return res.status(500).json({
+//       success: false,
+//       code: "AGENT_ERROR",
+//       message: "The agent is temporarily unavailable.",
+//     });
+//   }
+// };
+
+
+
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
@@ -356,16 +492,8 @@ export const agent = async (req, res) => {
       });
     }
 
-
-     /*
-     * Save user message to memory.
-     */
     await addMessage(conversationId, "user", prompt);
 
-
-    /*
-     * Execute LangGraph.
-     */
     const result = await graph.invoke({
       prompt,
       conversationId,
@@ -393,34 +521,36 @@ export const agent = async (req, res) => {
     const images = result?.images ?? [];
     const artifacts = result?.artifacts ?? [];
 
-    /*
-     * Save assistant response to memory.
-     */
     await addMessage(conversationId, "assistant", response);
 
     /*
-     * Save user message to Chat Service.
+     * Persist to Chat Service — best effort. A failure here must
+     * NOT turn a successful, already-billed agent response into
+     * an error for the user, so it's isolated in its own try/catch
+     * rather than sharing the outer one.
      */
-    await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
-      conversationId,
-      role: "user",
-      content: prompt,
-    });
+    try {
+      await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
+        conversationId,
+        role: "user",
+        content: prompt,
+      });
 
-    /*
-     * Save assistant message to Chat Service.
-     */
-    await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
-      conversationId,
-      role: "assistant",
-      content: response,
-      images,
-      artifacts,
-    });
+      await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
+        conversationId,
+        role: "assistant",
+        content: response,
+        images,
+        artifacts,
+      });
+    } catch (chatServiceError) {
+      console.error("[agent controller] chat service save failed:", {
+        conversationId,
+        error: chatServiceError.message,
+      });
+      // TODO: push to a retry queue instead of silently dropping
+    }
 
-    /*
-     * Return response + credits.
-     */
     return res.status(200).json({
       success: true,
       content: response,
@@ -430,15 +560,9 @@ export const agent = async (req, res) => {
       credits: result?.credits,
       deductedCredits: result?.deductedCredits,
     });
-
   } catch (error) {
     console.error("[agent controller]", error);
 
-    /*
-     * ------------------------------------------------------------
-     * INSUFFICIENT CREDITS
-     * ------------------------------------------------------------
-     */
     if (error.code === "INSUFFICIENT_CREDITS") {
       return res.status(402).json({
         success: false,
@@ -450,11 +574,6 @@ export const agent = async (req, res) => {
       });
     }
 
-    /*
-     * ------------------------------------------------------------
-     * OTHER AGENT ERRORS
-     * ------------------------------------------------------------
-     */
     return res.status(500).json({
       success: false,
       code: "AGENT_ERROR",
