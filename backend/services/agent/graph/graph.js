@@ -61,7 +61,6 @@
 
 // export const graph = workflow.compile();
 
-
 // import { StateGraph } from "@langchain/langgraph";
 // import { agentState } from "./state.js";
 // import { router } from "./router.js";
@@ -142,9 +141,6 @@
 
 // export const graph = workflow.compile();
 
-
-
-
 import { StateGraph } from "@langchain/langgraph";
 
 import { agentState } from "./state.js";
@@ -158,6 +154,8 @@ import { codingAgent } from "../agents/coding.agent.js";
 import { pdfAgent } from "../agents/pdf.agent.js";
 import { pptAgent } from "../agents/ppt.agent.js";
 import { visionAgent } from "../agents/vision.agent.js";
+import { pdfRag } from "../agents/pdfRag.agent.js";
+import { imageAnalyzer } from "../agents/imageAnalyzer.agent.js";
 
 const workflow = new StateGraph(agentState);
 
@@ -170,6 +168,8 @@ workflow.addNode("coding", codingAgent);
 workflow.addNode("pdf", pdfAgent);
 workflow.addNode("ppt", pptAgent);
 workflow.addNode("vision", visionAgent);
+workflow.addNode("pdfRag", pdfRag);
+workflow.addNode("imageAnalyzer", imageAnalyzer);
 
 workflow.addEdge("__start__", "router");
 
@@ -197,6 +197,12 @@ workflow.addConditionalEdges(
       case "vision":
         return "vision";
 
+      case "pdfRag":
+        return "pdfRag";
+
+      case "imageAnalyzer":
+        return "imageAnalyzer";
+
       default:
         return "chat";
     }
@@ -208,7 +214,9 @@ workflow.addConditionalEdges(
     pdf: "pdf",
     ppt: "ppt",
     vision: "vision",
-  }
+    pdfRag: "pdfRag",
+    imageAnalyzer: "imageAnalyzer",
+  },
 );
 
 workflow.addEdge("search", "chat");
@@ -218,5 +226,7 @@ workflow.addEdge("coding", "__end__");
 workflow.addEdge("pdf", "__end__");
 workflow.addEdge("ppt", "__end__");
 workflow.addEdge("vision", "__end__");
+workflow.addEdge("pdfRag", "__end__");
+workflow.addEdge("imageAnalyzer", "__end__");
 
 export const graph = workflow.compile();

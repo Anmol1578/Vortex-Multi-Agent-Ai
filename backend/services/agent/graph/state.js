@@ -14,4 +14,5 @@ export const agentState = Annotation.Root({
   artifacts:Annotation(),
   userId:Annotation(),
   creditDeduction: Annotation(),
+  file:Annotation(),
 });
