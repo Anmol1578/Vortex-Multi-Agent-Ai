@@ -221,6 +221,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { setUserdata } from "../redux/userSlice";
 import sendMessage from "../features/sendMessage";
 import { addMessages } from "../redux/messageSlice";
 import { createConversation } from "../features/createConversation";
@@ -310,6 +311,7 @@ function ChatInput({
 }) {
   const dispatch = useDispatch();
   const { selectedConversation } = useSelector((state) => state.conversation);
+  const userData = useSelector((state) => state.user.userData);
 
   // Keep the displayed "selected agent" in sync with whichever mode is
   // active, using the map above instead of a separate AGENTS list whose
@@ -365,6 +367,46 @@ function ChatInput({
       agent: mode,
     };
 
+//     try {
+//     const data = await sendMessage(payload);
+
+//     const replyContent =
+//       typeof data === "string"
+//         ? data
+//         : (data?.content ?? "Something went wrong — no response from agent.");
+
+//     dispatch(
+//       addMessages({
+//         role: "agent",
+//         agent: data?.agent ?? agent,
+//         content: replyContent,
+//         images: data?.images,
+//         artifacts: data?.artifacts,
+//       }),
+//     );
+//      } catch (error) {
+//     const status = error.response?.status;
+//     const errData = error.response?.data;
+
+//     const isCreditsError = status === 402 || errData?.code === "INSUFFICIENT_CREDITS";
+
+//     dispatch(
+//       addMessages({
+//         role: "agent",
+//         agent,
+//         content: isCreditsError
+//           ? `⚡ Not enough credits — you have ${errData?.credits} Credits, this needs ${errData?.requiredCredits} Credits. Upgrade your plan to continue.`
+//           : "Something went wrong. Please try again.",
+//         isError: true,
+// isCreditsError,
+//       }),
+//     );
+//   } finally {
+//     setThinking(false);
+//     setActiveAgent(null);
+//     }
+//   };
+
     try {
     const data = await sendMessage(payload);
 
@@ -372,6 +414,10 @@ function ChatInput({
       typeof data === "string"
         ? data
         : (data?.content ?? "Something went wrong — no response from agent.");
+
+    if (typeof data?.credits === "number" && userData) {
+      dispatch(setUserdata({ ...userData, credits: data.credits }));
+    }
 
     dispatch(
       addMessages({
@@ -387,6 +433,10 @@ function ChatInput({
     const errData = error.response?.data;
 
     const isCreditsError = status === 402 || errData?.code === "INSUFFICIENT_CREDITS";
+
+    if (isCreditsError && typeof errData?.credits === "number" && userData) {
+      dispatch(setUserdata({ ...userData, credits: errData.credits }));
+    }
 
     dispatch(
       addMessages({
