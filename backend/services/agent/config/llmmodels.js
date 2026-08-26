@@ -179,6 +179,9 @@ export const getModel = (agent) => {
     case "gemini":
       return gemini;
 
+       case "imageAnalyzer":
+      return gemini;
+
     default:
       return groq;
   }
