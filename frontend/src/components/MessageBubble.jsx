@@ -1,326 +1,6 @@
 // import React, { useState, useEffect } from "react";
 // import { createPortal } from "react-dom";
 // import Markdown from "react-markdown";
-// import remarkGfm from 'remark-gfm'
-// import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-// import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
-
-// /* ------------------------- icons used only here ------------------------- */
-
-// function CodeGlyphIcon() {
-//   return (
-//     <svg
-//       width="16"
-//       height="16"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="#5B4FC7"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
-//     </svg>
-//   );
-// }
-// function ChevronIcon() {
-//   return (
-//     <svg
-//       width="16"
-//       height="16"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <path d="M9 18l6-6-6-6" />
-//     </svg>
-//   );
-// }
-
-// /* ------------------------- artifact extraction ------------------------- */
-
-// // Defensive: some stored/incoming messages can have missing or non-string
-// // `content` (e.g. an older stub agent once saved a message with no content
-// // field to the DB). Never let that crash the whole message list.
-// function extractArtifact(content) {
-//   if (typeof content !== "string" || !content) {
-//     return { text: "", artifact: null };
-//   }
-//   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
-//   if (!match) return { text: content, artifact: null };
-//   const [full, lang, code] = match;
-//   const text = content.replace(full, "").trim();
-//   return {
-//     text,
-//     artifact: {
-//       language: (lang || "text").toLowerCase(),
-//       code: code.replace(/\n$/, ""),
-//     },
-//   };
-// }
-
-// function ArtifactCard({ artifact, onOpen }) {
-//   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
-//   return (
-//     <button
-//       onClick={onOpen}
-//       className="w-full text-left rounded-lg border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
-//     >
-//       <div className="flex items-center gap-2.5 px-4 py-3">
-//         <span
-//           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-//           style={{ background: "rgba(91,79,199,0.1)" }}
-//         >
-//           <CodeGlyphIcon />
-//         </span>
-//         <div className="min-w-0 flex-1">
-//           <p className="text-sm font-medium truncate">Code artifact</p>
-//           <p className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/35 truncate">
-//             {artifact.language} · {firstLine}
-//             {artifact.code.split("\n")[0].length > 46 ? "…" : ""}
-//           </p>
-//         </div>
-//         <span className="text-black/25 group-hover:text-[#5B4FC7] transition-colors shrink-0">
-//           <ChevronIcon />
-//         </span>
-//       </div>
-//     </button>
-//   );
-// }
-
-// /* ------------------------- image grid ------------------------- */
-
-// // Tavily can return images as plain URL strings, or (with
-// // includeImageDescriptions) as { url, description } objects.
-// // Handle both without crashing.
-// function ImageGrid({ images, onImageClick }) {
-//   if (!Array.isArray(images) || images.length === 0) return null;
-
-//   return (
-//     <div className="grid grid-cols-2 gap-2 pt-1">
-//       {images.map((img, idx) => {
-//         const src = typeof img === "string" ? img : img?.url;
-//         const alt = typeof img === "string" ? "" : (img?.description ?? "");
-//         if (!src) return null;
-
-//         return (
-//           <button
-//             key={idx}
-//             type="button"
-//             onClick={() => onImageClick({ src, alt })}
-//             className="block rounded-lg overflow-hidden border border-black/[0.07] hover:opacity-90 transition-opacity cursor-zoom-in"
-//           >
-//             <img
-//               src={src}
-//               alt={alt}
-//               loading="lazy"
-//               className="w-full h-32 object-cover"
-//               onError={(e) => {
-//                 e.currentTarget.parentElement.style.display = "none";
-//               }}
-//             />
-//           </button>
-//         );
-//       })}
-//     </div>
-//   );
-// }
-
-// /* ------------------------- image lightbox ------------------------- */
-
-// function CloseIcon() {
-//   return (
-//     <svg
-//       width="20"
-//       height="20"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="white"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <path d="M18 6L6 18M6 6l12 12" />
-//     </svg>
-//   );
-// }
-
-// function ImageLightbox({ image, onClose }) {
-//   // Close on Escape, and lock background scroll while open.
-//   useEffect(() => {
-//     const handleKey = (e) => {
-//       if (e.key === "Escape") onClose();
-//     };
-//     document.addEventListener("keydown", handleKey);
-//     const prevOverflow = document.body.style.overflow;
-//     document.body.style.overflow = "hidden";
-//     return () => {
-//       document.removeEventListener("keydown", handleKey);
-//       document.body.style.overflow = prevOverflow;
-//     };
-//   }, [onClose]);
-
-//   if (!image) return null;
-
-//   return createPortal(
-//     <div
-//       className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-md motion-safe:animate-[fadeUp_0.2s_ease-out_both]"
-//       onClick={onClose}
-//     >
-//       <button
-//         type="button"
-//         onClick={onClose}
-//         aria-label="Close"
-//         className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-//       >
-//         <CloseIcon />
-//       </button>
-//       <img
-//         src={image.src}
-//         alt={image.alt}
-//         onClick={(e) => e.stopPropagation()}
-//         className="max-w-full max-h-full rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)] object-contain"
-//       />
-//       {image.alt && (
-//         <p
-//           onClick={(e) => e.stopPropagation()}
-//           className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-[80%] text-center text-white/80 text-xs font-[IBM_Plex_Mono,monospace] px-3"
-//         >
-//           {image.alt}
-//         </p>
-//       )}
-//     </div>,
-//     document.body,
-//   );
-// }
-
-// /* ------------------------- markdown renderers ------------------------- */
-
-// const markdownComponents = {
-//   a: ({ children, ...props }) => (
-//     <a
-//       {...props}
-//       target="_blank"
-//       rel="noopener noreferrer"
-//       className="text-[#1E7A56] hover:underline"
-//     >
-//       {children}
-//     </a>
-//   ),
-//   code: ({ className, children, ...props }) => {
-//     const match = /language-(\w+)/.exec(className || "");
-//     const codeText = String(children).replace(/\n$/, "");
-
-//     if (!match) {
-//       return (
-//         <code
-//           className="bg-black/[0.06] rounded px-1 py-0.5 text-[13px]"
-//           {...props}
-//         >
-//           {children}
-//         </code>
-//       );
-//     }
-
-//     return (
-//       <SyntaxHighlighter
-//         language={match[1]}
-//         style={oneLight}
-//         customStyle={{
-//           borderRadius: "8px",
-//           fontSize: "12.5px",
-//           margin: "0.5rem 0",
-//         }}
-//       >
-//         {codeText}
-//       </SyntaxHighlighter>
-//     );
-//   },
-// };
-
-// /* --------------------------- message bubble --------------------------- */
-
-// function MessageBubble({ message, onOpenArtifact }) {
-//   const [lightboxImage, setLightboxImage] = useState(null);
-
-//   if (!message) return null;
-
-//   if (message.role === "user") {
-//     return (
-//       <div className="flex justify-end motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
-//         <div className="max-w-[80%] rounded-lg rounded-tr-sm bg-[#14151A] text-white text-sm px-4 py-3">
-//           {message.content ?? ""}
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   const { text, artifact } = extractArtifact(message.content);
-//   const agent = message.agent;
-//   const images = message.images;
-//   const hasImages = Array.isArray(images) && images.length > 0;
-//   const hasFallback = !text && !artifact && !hasImages;
-
-//   return (
-//     <div className="flex justify-start motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
-//       <div className="max-w-[85%] w-full">
-//         <div className="flex items-center gap-2 mb-1.5">
-//           <span
-//             className="w-1.5 h-1.5 rounded-full"
-//             style={{ background: agent?.color ?? "#1E7A56" }}
-//           />
-//           <span
-//             className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium"
-//             style={{ color: agent?.color ?? "#1E7A56" }}
-//           >
-//             {agent?.label ?? "VORTEX"}
-//           </span>
-//         </div>
-//         <div className="rounded-lg rounded-tl-sm border border-black/[0.07] bg-white text-sm px-4 py-3 text-black/80 shadow-[0_2px_10px_rgba(20,21,26,0.04)] space-y-3">
-//           {hasFallback && (
-//             <span className="text-black/35 italic">
-//               (this message has no content)
-//             </span>
-//           )}
-//           {text && (
-//             <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1.5 prose-ol:my-1.5">
-//               <Markdown components={markdownComponents}>{text}</Markdown>
-//             </div>
-//           )}
-//           {artifact && (
-//             <ArtifactCard
-//               artifact={artifact}
-//               onOpen={() => onOpenArtifact(artifact)}
-//             />
-//           )}
-//           {hasImages && (
-//             <ImageGrid images={images} onImageClick={setLightboxImage} />
-//           )}
-//         </div>
-//       </div>
-//       <ImageLightbox
-//         image={lightboxImage}
-//         onClose={() => setLightboxImage(null)}
-//       />
-//     </div>
-//   );
-// }
-
-// export default MessageBubble;
-
-
-
-
-
-// 25 july 
-
-
-// import React, { useState, useEffect } from "react";
-// import { createPortal } from "react-dom";
-// import Markdown from "react-markdown";
 // import remarkGfm from "remark-gfm";
 // import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 // import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -411,133 +91,47 @@
 
 // /* ------------------------- artifact extraction ------------------------- */
 
-// // Defensive: some stored/incoming messages can have missing or non-string
-// // `content` (e.g. an older stub agent once saved a message with no content
-// // field to the DB). Never let that crash the whole message list.
-
-
-// // function extractArtifact(content) {
-// //   if (typeof content !== "string" || !content) {
-// //     return { text: "", artifact: null };
-// //   }
-
-// //   // -------- NEW JSON artifact --------
-// //   try {
-// //     const parsed = JSON.parse(content);
-
-// //     if (
-// //       parsed &&
-// //       parsed.intent === "CODE_GENERATION" &&
-// //       Array.isArray(parsed.files)
-// //     ) {
-// //       return {
-// //         text: parsed.message || "",
-// //         artifact: {
-// //           type: "json",
-// //           title: parsed.title,
-// //           description: parsed.description,
-// //           files: parsed.files,
-// //           dependencies: parsed.dependencies || [],
-// //           commands: parsed.commands || [],
-// //           notes: parsed.notes || [],
-// //         },
-// //       };
-// //     }
-// //   } catch {
-// //     // Not JSON → continue
-// //   }
-
-// //   // -------- OLD markdown artifact --------
-// //   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
-
-// //   if (!match) {
-// //     return {
-// //       text: content,
-// //       artifact: null,
-// //     };
-// //   }
-
-// //   const [full, lang, code] = match;
-
-// //   return {
-// //     text: content.replace(full, "").trim(),
-// //     artifact: {
-// //       type: "markdown",
-// //       language: (lang || "text").toLowerCase(),
-// //       code: code.replace(/\n$/, ""),
-// //     },
-// //   };
-// // }
-
-
-// function extractArtifact(content) {
-//   if (typeof content !== "string" || !content) {
-//     return { text: "", artifact: null };
-//   }
-
-//   // -------- JSON responses from the coding agent --------
-//   try {
-//     const parsed = JSON.parse(content);
-
-//     if (parsed && typeof parsed === "object" && parsed.intent) {
-//       // Shape with files → renders as an artifact card
-//       if (Array.isArray(parsed.files) && parsed.files.length > 0) {
-//         return {
-//           text: parsed.message || "",
-//           artifact: {
-//             type: "json",
-//             title: parsed.title,
-//             description: parsed.description,
-//             files: parsed.files,
-//             dependencies: parsed.dependencies || [],
-//             commands: parsed.commands || [],
-//             notes: parsed.notes || [],
-//           },
-//         };
-//       }
-
-//       // Text-only intents (CODE_REVIEW, CODE_EXPLANATION, DOCUMENTATION,
-//       // or DEBUGGING/OPTIMIZATION/CONVERSION with no files) → just the message
-//       if (typeof parsed.message === "string") {
-//         return { text: parsed.message, artifact: null };
-//       }
-//     }
-//   } catch {
-//     // Not JSON → continue to legacy markdown-fence handling
-//   }
-
-//   // -------- OLD markdown artifact fallback --------
-//   const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
-
-//   if (!match) {
-//     return { text: content, artifact: null };
-//   }
-
-//   const [full, lang, code] = match;
-
-//   return {
-//     text: content.replace(full, "").trim(),
-//     artifact: {
-//       type: "markdown",
-//       language: (lang || "text").toLowerCase(),
-//       code: code.replace(/\n$/, ""),
-//     },
-//   };
-// }
-
-
-
-
-
-
-
-
-
-
-
-
 // // function ArtifactCard({ artifact, onOpen }) {
-// //   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
+// //   if (!artifact) return null;
+
+// //   // JSON artifact (multiple files)
+// //  if (Array.isArray(artifact.files) && artifact.files.length > 0) {
+// //     return (
+// //       <button
+// //         onClick={onOpen}
+// //         className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
+// //       >
+// //         <div className="flex items-center gap-3 px-4 py-3.5">
+// //           <span
+// //             className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+// //             style={{ background: "rgba(91,79,199,.1)" }}
+// //           >
+// //             <CodeGlyphIcon />
+// //           </span>
+
+// //           <div className="flex-1 min-w-0">
+// //   <p className="text-[13.5px] font-medium truncate">
+// //     {artifact.files[0]?.name || artifact.files[0]?.path?.split("/").pop() || artifact.title || "Untitled file"}
+// //   </p>
+
+// //   <p className="text-[11.5px] text-black/45 truncate">
+// //     {artifact.files.length} file
+// //     {artifact.files.length !== 1 ? "s" : ""}
+// //   </p>
+// // </div>
+
+// //           <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
+// //             <ChevronIcon />
+// //           </span>
+// //         </div>
+// //       </button>
+// //     );
+// //   }
+
+// //   // Legacy single-code artifact
+// // const firstLine =
+// //   (artifact.code || "").trim().split("\n")[0].slice(0, 46);
+
 // //   return (
 // //     <button
 // //       onClick={onOpen}
@@ -546,19 +140,22 @@
 // //       <div className="flex items-center gap-3 px-4 py-3.5">
 // //         <span
 // //           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-// //           style={{ background: "rgba(91,79,199,0.1)" }}
+// //           style={{ background: "rgba(91,79,199,.1)" }}
 // //         >
 // //           <CodeGlyphIcon />
 // //         </span>
-// //         <div className="min-w-0 flex-1">
-// //           <p className="text-[13.5px] font-medium leading-tight">
-// //             Code artifact
+
+// //         <div className="flex-1 min-w-0">
+// //           <p className="text-[13.5px] font-medium">
+// //             Code Artifact
 // //           </p>
-// //           <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate mt-0.5">
-// //             {artifact.language} · {firstLine}
-// //             {artifact.code.split("\n")[0].length > 46 ? "…" : ""}
+
+// //           <p className="text-[11.5px] text-black/40 truncate">
+// //            {artifact.language ?? "Plain Text"} · {firstLine}
+// //             {firstLine.length >= 46 ? "…" : ""}
 // //           </p>
 // //         </div>
+
 // //         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
 // //           <ChevronIcon />
 // //         </span>
@@ -567,9 +164,15 @@
 // //   );
 // // }
 
-
 // function ArtifactCard({ artifact, onOpen }) {
-//   if (artifact.type === "json") {
+//   if (!artifact) return null;
+
+//   // Multi-file artifact
+//   if (Array.isArray(artifact.files) && artifact.files.length > 0) {
+//     const primary = artifact.files[0];
+//     const primaryName =
+//       primary?.name || primary?.path?.split("/").pop() || "Untitled file";
+
 //     return (
 //       <button
 //         onClick={onOpen}
@@ -577,29 +180,42 @@
 //       >
 //         <div className="flex items-center gap-3 px-4 py-3.5">
 //           <span
-//             className="w-8 h-8 rounded-md flex items-center justify-center"
+//             className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
 //             style={{ background: "rgba(91,79,199,.1)" }}
 //           >
 //             <CodeGlyphIcon />
 //           </span>
 
 //           <div className="flex-1 min-w-0">
-//             <p className="text-[13.5px] font-medium">
-//               {artifact.title}
-//             </p>
-
+//             <p className="text-[13.5px] font-medium truncate">{primaryName}</p>
 //             <p className="text-[11.5px] text-black/45 truncate">
-//               {artifact.files.length} file(s)
+//               {artifact.files.length} file
+//               {artifact.files.length !== 1 ? "s" : ""}
 //             </p>
 //           </div>
 
-//           <ChevronIcon />
+//           <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
+//             <ChevronIcon />
+//           </span>
 //         </div>
 //       </button>
 //     );
 //   }
 
-//   const firstLine = artifact.code.split("\n")[0].slice(0, 46);
+//   // Legacy single-code artifact (no real filename available)
+//   const LANG_EXT = {
+//     javascript: "js",
+//     typescript: "ts",
+//     python: "py",
+//     css: "css",
+//     html: "html",
+//     json: "json",
+//     bash: "sh",
+//     markdown: "md",
+//   };
+//   const ext = LANG_EXT[artifact.language] || "txt";
+//   const fallbackName = artifact.name || `snippet.${ext}`;
+//   const firstLine = (artifact.code || "").trim().split("\n")[0].slice(0, 46);
 
 //   return (
 //     <button
@@ -608,35 +224,123 @@
 //     >
 //       <div className="flex items-center gap-3 px-4 py-3.5">
 //         <span
-//           className="w-8 h-8 rounded-md flex items-center justify-center"
+//           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
 //           style={{ background: "rgba(91,79,199,.1)" }}
 //         >
 //           <CodeGlyphIcon />
 //         </span>
 
 //         <div className="flex-1 min-w-0">
-//           <p className="text-[13.5px] font-medium">
-//             Code Artifact
-//           </p>
-
+//           <p className="text-[13.5px] font-medium truncate">{fallbackName}</p>
 //           <p className="text-[11.5px] text-black/40 truncate">
-//             {artifact.language} · {firstLine}
+//             {artifact.language ?? "Plain Text"} · {firstLine}
+//             {firstLine.length >= 46 ? "…" : ""}
 //           </p>
 //         </div>
 
-//         <ChevronIcon />
+//         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
+//           <ChevronIcon />
+//         </span>
 //       </div>
 //     </button>
 //   );
 // }
 
+// function DownloadIcon() {
+//   return (
+//     <svg
+//       width="13"
+//       height="13"
+//       viewBox="0 0 24 24"
+//       fill="none"
+//       stroke="currentColor"
+//       strokeWidth="2"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//     >
+//       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+//       <polyline points="7 10 12 15 17 10" />
+//       <line x1="12" y1="15" x2="12" y2="3" />
+//     </svg>
+//   );
+// }
 
+// async function downloadImage(src, filename = "image.png") {
+//   try {
+//     const res = await fetch(src);
+//     const blob = await res.blob();
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = filename;
+//     document.body.appendChild(a);
+//     a.click();
+//     a.remove();
+//     URL.revokeObjectURL(url);
+//   } catch {
+//     // fallback — open in new tab so the user can save manually
+//     window.open(src, "_blank");
+//   }
+// }
 
 // /* ------------------------- image grid ------------------------- */
 
 // // Tavily can return images as plain URL strings, or (with
 // // includeImageDescriptions) as { url, description } objects.
 // // Handle both without crashing.
+// // function ImageGrid({ images, onImageClick }) {
+// //   if (!Array.isArray(images) || images.length === 0) return null;
+
+// //   const valid = images
+// //     .map((img) => {
+// //       const src = typeof img === "string" ? img : img?.url;
+// //       const alt = typeof img === "string" ? "" : (img?.description ?? "");
+// //       return src ? { src, alt } : null;
+// //     })
+// //     .filter(Boolean);
+
+// //   if (valid.length === 0) return null;
+
+// //   // Single image gets a larger, more editorial treatment.
+// //   const gridClass =
+// //     valid.length === 1
+// //       ? "grid grid-cols-1"
+// //       : valid.length === 2
+// //         ? "grid grid-cols-2 gap-2"
+// //         : "grid grid-cols-2 sm:grid-cols-3 gap-2";
+
+// //   return (
+// //     <div className={`${gridClass} pt-1`}>
+// //       {valid.map((img, idx) => (
+// //         <button
+// //           key={idx}
+// //           type="button"
+// //           onClick={() => onImageClick(img)}
+// //           className="group relative block rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02] cursor-zoom-in"
+// //         >
+// //           <img
+// //             src={img.src}
+// //             alt={img.alt}
+// //             loading="lazy"
+// //             className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
+// //               valid.length === 1 ? "h-56" : "h-32"
+// //             }`}
+// //             onError={(e) => {
+// //               e.currentTarget.closest("button").style.display = "none";
+// //             }}
+// //           />
+// //           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+// //           {img.alt && (
+// //             <span className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[10.5px] leading-snug text-white bg-gradient-to-t from-black/65 to-transparent line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
+// //               {img.alt}
+// //             </span>
+// //           )}
+// //         </button>
+// //       ))}
+// //     </div>
+// //   );
+// // }
+
 // function ImageGrid({ images, onImageClick }) {
 //   if (!Array.isArray(images) || images.length === 0) return null;
 
@@ -650,7 +354,6 @@
 
 //   if (valid.length === 0) return null;
 
-//   // Single image gets a larger, more editorial treatment.
 //   const gridClass =
 //     valid.length === 1
 //       ? "grid grid-cols-1"
@@ -661,30 +364,41 @@
 //   return (
 //     <div className={`${gridClass} pt-1`}>
 //       {valid.map((img, idx) => (
-//         <button
+//         <div
 //           key={idx}
-//           type="button"
-//           onClick={() => onImageClick(img)}
-//           className="group relative block rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02] cursor-zoom-in"
+//           className="group relative rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02]"
 //         >
-//           <img
-//             src={img.src}
-//             alt={img.alt}
-//             loading="lazy"
-//             className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
-//               valid.length === 1 ? "h-56" : "h-32"
-//             }`}
-//             onError={(e) => {
-//               e.currentTarget.closest("button").style.display = "none";
+//           <button
+//             type="button"
+//             onClick={() => onImageClick(img)}
+//             className="block w-full cursor-zoom-in"
+//           >
+//             <img
+//               src={img.src}
+//               alt={img.alt}
+//               loading="lazy"
+//               className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
+//                 valid.length === 1 ? "h-56" : "h-32"
+//               }`}
+//               onError={(e) => {
+//                 e.currentTarget.closest("div").style.display = "none";
+//               }}
+//             />
+//             <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+//           </button>
+
+//           <button
+//             type="button"
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               downloadImage(img.src, `vortex-image-${idx + 1}.png`);
 //             }}
-//           />
-//           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-//           {img.alt && (
-//             <span className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[10.5px] leading-snug text-white bg-gradient-to-t from-black/65 to-transparent line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
-//               {img.alt}
-//             </span>
-//           )}
-//         </button>
+//             aria-label="Download image"
+//             className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+//           >
+//             <DownloadIcon />
+//           </button>
+//         </div>
 //       ))}
 //     </div>
 //   );
@@ -903,7 +617,9 @@
 //     );
 //   }
 
-//   const { text, artifact } = extractArtifact(message.content);
+//   const text = message.content;
+//   const artifact =
+//     message.artifacts && message.artifacts.length ? message.artifacts[0] : null;
 //   const agent = message.agent;
 //   const images = message.images;
 //   const hasImages = Array.isArray(images) && images.length > 0;
@@ -962,9 +678,6 @@
 // export default MessageBubble;
 
 
-
-
-
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Markdown from "react-markdown";
@@ -976,48 +689,21 @@ import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function CodeGlyphIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#5B4FC7"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B4FC7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
     </svg>
   );
 }
 function ChevronIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }
 function CopyIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="9" y="9" width="13" height="13" rx="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </svg>
@@ -1025,120 +711,33 @@ function CopyIcon() {
 }
 function CheckIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 6L9 17l-5-5" />
     </svg>
   );
 }
 function CloseIcon() {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="white"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+// New — used for the attached-file chip on user messages
+function FileTextIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
     </svg>
   );
 }
 
 /* ------------------------- artifact extraction ------------------------- */
 
-// function ArtifactCard({ artifact, onOpen }) {
-//   if (!artifact) return null;
-
-//   // JSON artifact (multiple files)
-//  if (Array.isArray(artifact.files) && artifact.files.length > 0) {
-//     return (
-//       <button
-//         onClick={onOpen}
-//         className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
-//       >
-//         <div className="flex items-center gap-3 px-4 py-3.5">
-//           <span
-//             className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-//             style={{ background: "rgba(91,79,199,.1)" }}
-//           >
-//             <CodeGlyphIcon />
-//           </span>
-
-
-//           <div className="flex-1 min-w-0">
-//   <p className="text-[13.5px] font-medium truncate">
-//     {artifact.files[0]?.name || artifact.files[0]?.path?.split("/").pop() || artifact.title || "Untitled file"}
-//   </p>
-
-//   <p className="text-[11.5px] text-black/45 truncate">
-//     {artifact.files.length} file
-//     {artifact.files.length !== 1 ? "s" : ""}
-//   </p>
-// </div>
-
-//           <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
-//             <ChevronIcon />
-//           </span>
-//         </div>
-//       </button>
-//     );
-//   }
-
-//   // Legacy single-code artifact
-// const firstLine =
-//   (artifact.code || "").trim().split("\n")[0].slice(0, 46);
-
-//   return (
-//     <button
-//       onClick={onOpen}
-//       className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
-//     >
-//       <div className="flex items-center gap-3 px-4 py-3.5">
-//         <span
-//           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-//           style={{ background: "rgba(91,79,199,.1)" }}
-//         >
-//           <CodeGlyphIcon />
-//         </span>
-
-//         <div className="flex-1 min-w-0">
-//           <p className="text-[13.5px] font-medium">
-//             Code Artifact
-//           </p>
-
-//           <p className="text-[11.5px] text-black/40 truncate">
-//            {artifact.language ?? "Plain Text"} · {firstLine}
-//             {firstLine.length >= 46 ? "…" : ""}
-//           </p>
-//         </div>
-
-//         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
-//           <ChevronIcon />
-//         </span>
-//       </div>
-//     </button>
-//   );
-// }
-
-
-
-
 function ArtifactCard({ artifact, onOpen }) {
   if (!artifact) return null;
 
-  // Multi-file artifact
   if (Array.isArray(artifact.files) && artifact.files.length > 0) {
     const primary = artifact.files[0];
     const primaryName =
@@ -1150,21 +749,15 @@ function ArtifactCard({ artifact, onOpen }) {
         className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
       >
         <div className="flex items-center gap-3 px-4 py-3.5">
-          <span
-            className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-            style={{ background: "rgba(91,79,199,.1)" }}
-          >
+          <span className="w-8 h-8 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(91,79,199,.1)" }}>
             <CodeGlyphIcon />
           </span>
-
           <div className="flex-1 min-w-0">
             <p className="text-[13.5px] font-medium truncate">{primaryName}</p>
             <p className="text-[11.5px] text-black/45 truncate">
-              {artifact.files.length} file
-              {artifact.files.length !== 1 ? "s" : ""}
+              {artifact.files.length} file{artifact.files.length !== 1 ? "s" : ""}
             </p>
           </div>
-
           <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
             <ChevronIcon />
           </span>
@@ -1173,16 +766,9 @@ function ArtifactCard({ artifact, onOpen }) {
     );
   }
 
-  // Legacy single-code artifact (no real filename available)
   const LANG_EXT = {
-    javascript: "js",
-    typescript: "ts",
-    python: "py",
-    css: "css",
-    html: "html",
-    json: "json",
-    bash: "sh",
-    markdown: "md",
+    javascript: "js", typescript: "ts", python: "py", css: "css",
+    html: "html", json: "json", bash: "sh", markdown: "md",
   };
   const ext = LANG_EXT[artifact.language] || "txt";
   const fallbackName = artifact.name || `snippet.${ext}`;
@@ -1194,13 +780,9 @@ function ArtifactCard({ artifact, onOpen }) {
       className="w-full text-left rounded-xl border border-black/[0.08] bg-white overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-8px_rgba(91,79,199,0.28)] hover:border-[#5B4FC7]/30"
     >
       <div className="flex items-center gap-3 px-4 py-3.5">
-        <span
-          className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-          style={{ background: "rgba(91,79,199,.1)" }}
-        >
+        <span className="w-8 h-8 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(91,79,199,.1)" }}>
           <CodeGlyphIcon />
         </span>
-
         <div className="flex-1 min-w-0">
           <p className="text-[13.5px] font-medium truncate">{fallbackName}</p>
           <p className="text-[11.5px] text-black/40 truncate">
@@ -1208,7 +790,6 @@ function ArtifactCard({ artifact, onOpen }) {
             {firstLine.length >= 46 ? "…" : ""}
           </p>
         </div>
-
         <span className="text-black/25 group-hover:text-[#5B4FC7] group-hover:translate-x-0.5 transition-all shrink-0">
           <ChevronIcon />
         </span>
@@ -1216,9 +797,6 @@ function ArtifactCard({ artifact, onOpen }) {
     </button>
   );
 }
-
-
-
 
 function DownloadIcon() {
   return (
@@ -1243,73 +821,11 @@ async function downloadImage(src, filename = "image.png") {
     a.remove();
     URL.revokeObjectURL(url);
   } catch {
-    // fallback — open in new tab so the user can save manually
     window.open(src, "_blank");
   }
 }
 
-
-
-
 /* ------------------------- image grid ------------------------- */
-
-// Tavily can return images as plain URL strings, or (with
-// includeImageDescriptions) as { url, description } objects.
-// Handle both without crashing.
-// function ImageGrid({ images, onImageClick }) {
-//   if (!Array.isArray(images) || images.length === 0) return null;
-
-//   const valid = images
-//     .map((img) => {
-//       const src = typeof img === "string" ? img : img?.url;
-//       const alt = typeof img === "string" ? "" : (img?.description ?? "");
-//       return src ? { src, alt } : null;
-//     })
-//     .filter(Boolean);
-
-//   if (valid.length === 0) return null;
-
-//   // Single image gets a larger, more editorial treatment.
-//   const gridClass =
-//     valid.length === 1
-//       ? "grid grid-cols-1"
-//       : valid.length === 2
-//         ? "grid grid-cols-2 gap-2"
-//         : "grid grid-cols-2 sm:grid-cols-3 gap-2";
-
-//   return (
-//     <div className={`${gridClass} pt-1`}>
-//       {valid.map((img, idx) => (
-//         <button
-//           key={idx}
-//           type="button"
-//           onClick={() => onImageClick(img)}
-//           className="group relative block rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02] cursor-zoom-in"
-//         >
-//           <img
-//             src={img.src}
-//             alt={img.alt}
-//             loading="lazy"
-//             className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${
-//               valid.length === 1 ? "h-56" : "h-32"
-//             }`}
-//             onError={(e) => {
-//               e.currentTarget.closest("button").style.display = "none";
-//             }}
-//           />
-//           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-//           {img.alt && (
-//             <span className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[10.5px] leading-snug text-white bg-gradient-to-t from-black/65 to-transparent line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
-//               {img.alt}
-//             </span>
-//           )}
-//         </button>
-//       ))}
-//     </div>
-//   );
-// }
-
-
 
 function ImageGrid({ images, onImageClick }) {
   if (!Array.isArray(images) || images.length === 0) return null;
@@ -1334,15 +850,8 @@ function ImageGrid({ images, onImageClick }) {
   return (
     <div className={`${gridClass} pt-1`}>
       {valid.map((img, idx) => (
-        <div
-          key={idx}
-          className="group relative rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02]"
-        >
-          <button
-            type="button"
-            onClick={() => onImageClick(img)}
-            className="block w-full cursor-zoom-in"
-          >
+        <div key={idx} className="group relative rounded-xl overflow-hidden border border-black/[0.07] bg-black/[0.02]">
+          <button type="button" onClick={() => onImageClick(img)} className="block w-full cursor-zoom-in">
             <img
               src={img.src}
               alt={img.alt}
@@ -1356,7 +865,6 @@ function ImageGrid({ images, onImageClick }) {
             />
             <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
           </button>
-
           <button
             type="button"
             onClick={(e) => {
@@ -1374,14 +882,9 @@ function ImageGrid({ images, onImageClick }) {
   );
 }
 
-
-
-
-
 /* ------------------------- image lightbox ------------------------- */
 
 function ImageLightbox({ image, onClose }) {
-  // Close on Escape, and lock background scroll while open.
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -1450,10 +953,7 @@ function CodeBlock({ language, codeText }) {
         <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/40 tracking-wide">
           {language}
         </span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1 text-[11px] text-black/40 hover:text-black/70 transition-colors"
-        >
+        <button onClick={handleCopy} className="flex items-center gap-1 text-[11px] text-black/40 hover:text-black/70 transition-colors">
           {copied ? <CheckIcon /> : <CopyIcon />}
           {copied ? "Copied" : "Copy"}
         </button>
@@ -1479,54 +979,21 @@ function CodeBlock({ language, codeText }) {
 
 const markdownComponents = {
   a: ({ children, ...props }) => (
-    <a
-      {...props}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-[#1E7A56] font-medium hover:underline underline-offset-2"
-    >
+    <a {...props} target="_blank" rel="noopener noreferrer" className="text-[#1E7A56] font-medium hover:underline underline-offset-2">
       {children}
     </a>
   ),
-  h1: ({ children }) => (
-    <h1 className="text-[17px] font-semibold text-black/85 mt-4 mb-1.5 first:mt-0">
-      {children}
-    </h1>
-  ),
-  h2: ({ children }) => (
-    <h2 className="text-[15.5px] font-semibold text-black/85 mt-4 mb-1.5 first:mt-0">
-      {children}
-    </h2>
-  ),
-  h3: ({ children }) => (
-    <h3 className="text-[14px] font-semibold text-black/80 mt-3 mb-1 first:mt-0">
-      {children}
-    </h3>
-  ),
-  p: ({ children }) => (
-    <p className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 first:mt-0 last:mb-0">
-      {children}
-    </p>
-  ),
-  ul: ({ children }) => (
-    <ul className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 pl-5 space-y-1 list-disc marker:text-black/30">
-      {children}
-    </ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 pl-5 space-y-1 list-decimal marker:text-black/30 marker:font-medium">
-      {children}
-    </ol>
-  ),
+  h1: ({ children }) => <h1 className="text-[17px] font-semibold text-black/85 mt-4 mb-1.5 first:mt-0">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-[15.5px] font-semibold text-black/85 mt-4 mb-1.5 first:mt-0">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-[14px] font-semibold text-black/80 mt-3 mb-1 first:mt-0">{children}</h3>,
+  p: ({ children }) => <p className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 first:mt-0 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 pl-5 space-y-1 list-disc marker:text-black/30">{children}</ul>,
+  ol: ({ children }) => <ol className="text-[14.5px] leading-[1.65] text-black/80 my-1.5 pl-5 space-y-1 list-decimal marker:text-black/30 marker:font-medium">{children}</ol>,
   li: ({ children }) => <li className="pl-0.5">{children}</li>,
-  strong: ({ children }) => (
-    <strong className="font-semibold text-black/90">{children}</strong>
-  ),
+  strong: ({ children }) => <strong className="font-semibold text-black/90">{children}</strong>,
   em: ({ children }) => <em className="text-black/75">{children}</em>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-[#1E7A56]/30 pl-3 my-2 text-black/60 italic text-[14px]">
-      {children}
-    </blockquote>
+    <blockquote className="border-l-2 border-[#1E7A56]/30 pl-3 my-2 text-black/60 italic text-[14px]">{children}</blockquote>
   ),
   hr: () => <hr className="my-3 border-black/[0.08]" />,
   table: ({ children }) => (
@@ -1534,26 +1001,13 @@ const markdownComponents = {
       <table className="w-full text-[13px] border-collapse">{children}</table>
     </div>
   ),
-  thead: ({ children }) => (
-    <thead className="bg-black/[0.03]">{children}</thead>
-  ),
+  thead: ({ children }) => <thead className="bg-black/[0.03]">{children}</thead>,
   th: ({ children }) => (
-    <th className="text-left font-semibold text-black/70 px-3 py-2 border-b border-black/[0.08] whitespace-nowrap">
-      {children}
-    </th>
+    <th className="text-left font-semibold text-black/70 px-3 py-2 border-b border-black/[0.08] whitespace-nowrap">{children}</th>
   ),
-  td: ({ children }) => (
-    <td className="px-3 py-2 border-b border-black/[0.05] text-black/75 align-top">
-      {children}
-    </td>
-  ),
+  td: ({ children }) => <td className="px-3 py-2 border-b border-black/[0.05] text-black/75 align-top">{children}</td>,
   img: ({ src, alt }) => (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      className="rounded-lg border border-black/[0.07] max-w-full my-2"
-    />
+    <img src={src} alt={alt} loading="lazy" className="rounded-lg border border-black/[0.07] max-w-full my-2" />
   ),
   code: ({ className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");
@@ -1561,10 +1015,7 @@ const markdownComponents = {
 
     if (!match) {
       return (
-        <code
-          className="bg-black/[0.06] rounded px-1.5 py-0.5 text-[13px] font-[IBM_Plex_Mono,monospace] text-[#5B4FC7]"
-          {...props}
-        >
+        <code className="bg-black/[0.06] rounded px-1.5 py-0.5 text-[13px] font-[IBM_Plex_Mono,monospace] text-[#5B4FC7]" {...props}>
           {children}
         </code>
       );
@@ -1578,25 +1029,30 @@ const markdownComponents = {
 
 function MessageBubble({ message, onOpenArtifact }) {
   const [lightboxImage, setLightboxImage] = useState(null);
-  
 
   if (!message) return null;
 
   if (message.role === "user") {
     return (
       <div className="flex justify-end motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
-        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#14151A] text-white text-[14.5px] leading-relaxed px-4 py-3">
-          {message.content ?? ""}
+        <div className="max-w-[80%] flex flex-col items-end gap-1.5">
+          {message.fileName && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/[0.05] text-[11px] text-black/50">
+              <FileTextIcon />
+              <span className="truncate max-w-[180px]">{message.fileName}</span>
+            </div>
+          )}
+          <div className="rounded-2xl rounded-tr-sm bg-[#14151A] text-white text-[14.5px] leading-relaxed px-4 py-3">
+            {message.content ?? ""}
+          </div>
         </div>
       </div>
     );
   }
 
-const text = message.content;
-const artifact =
-  message.artifacts && message.artifacts.length
-    ? message.artifacts[0]
-    : null;
+  const text = message.content;
+  const artifact =
+    message.artifacts && message.artifacts.length ? message.artifacts[0] : null;
   const agent = message.agent;
   const images = message.images;
   const hasImages = Array.isArray(images) && images.length > 0;
@@ -1606,48 +1062,27 @@ const artifact =
     <div className="flex justify-start motion-safe:animate-[fadeUp_0.35s_ease-out_both]">
       <div className="max-w-[85%] w-full">
         <div className="flex items-center gap-2 mb-1.5">
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: agent?.color ?? "#1E7A56" }}
-          />
-          <span
-            className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium tracking-wide"
-            style={{ color: agent?.color ?? "#1E7A56" }}
-          >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: agent?.color ?? "#1E7A56" }} />
+          <span className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium tracking-wide" style={{ color: agent?.color ?? "#1E7A56" }}>
             {agent?.label ?? "VORTEX"}
           </span>
         </div>
         <div className="rounded-2xl rounded-tl-sm border border-black/[0.07] bg-white px-4 py-3.5 shadow-[0_2px_10px_rgba(20,21,26,0.04)] space-y-3">
           {hasFallback && (
-            <span className="text-black/35 italic text-[14px]">
-              (this message has no content)
-            </span>
+            <span className="text-black/35 italic text-[14px]">(this message has no content)</span>
           )}
           {text && (
             <div>
-              <Markdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-              >
+              <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                 {text}
               </Markdown>
             </div>
           )}
-          {artifact && (
-            <ArtifactCard
-              artifact={artifact}
-              onOpen={() => onOpenArtifact(artifact)}
-            />
-          )}
-          {hasImages && (
-            <ImageGrid images={images} onImageClick={setLightboxImage} />
-          )}
+          {artifact && <ArtifactCard artifact={artifact} onOpen={() => onOpenArtifact(artifact)} />}
+          {hasImages && <ImageGrid images={images} onImageClick={setLightboxImage} />}
         </div>
       </div>
-      <ImageLightbox
-        image={lightboxImage}
-        onClose={() => setLightboxImage(null)}
-      />
+      <ImageLightbox image={lightboxImage} onClose={() => setLightboxImage(null)} />
     </div>
   );
 }
