@@ -378,7 +378,9 @@ export const deductUserCredits = async (req, res) => {
       coding: 30,
       pdf: 10,
       ppt: 10,
-      vision: 25,
+      vision: 20,
+      pdfRag: 15,
+      imageAnalyzer: 10,
     };
 
     const requiredCredits = COST[agent];
