@@ -1,103 +1,6 @@
-// import React, { useEffect, useRef, useState } from "react";
+// import React, { useEffect, useMemo, useRef, useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
-// import Nav from "./Nav";
-// import MessageList from "./MessageList";
-// import ChatInput from "./ChatInput";
-// // import ArtifactPanel from "./artifact";
-// import getMessages from "../features/getMessages";
-// import { setMessages } from "../redux/messageSlice";
-// import { setJustCreated } from "../redux/conversationSlice";
-
-// function ChatArea() {
-//   const dispatch = useDispatch();
-
-//   const { selectedConversation } = useSelector((state) => state.conversation);
-//   const messages = useSelector((state) => state.message.messages ?? []);
-
-//   const [mode, setMode] = useState("auto");
-//   const [input, setInput] = useState("");
-//   const [activeAgent, setActiveAgent] = useState(null);
-//   const [thinking, setThinking] = useState(false);
-//   const [activeArtifact, setActiveArtifact] = useState(null);
-//   const scrollRef = useRef(null);
-
-//   // Fetch messages whenever the selected conversation changes
-
-//    useEffect(() => {
-//     if (!selectedConversation?._id) {
-//       dispatch(setMessages([]));
-//       return;
-//     }
-
-//     if (justCreated) {
-//       // Freshly created client-side — nothing on the backend yet, skip fetch.
-//       dispatch(setJustCreated(false));
-//       return;
-//     }
-
-//     // const loadMessages = async () => {
-//     //   const data = await getMessages(selectedConversation._id);
-//     //   dispatch(setMessages(Array.isArray(data) ? data : []));
-//     // };
-
-//     const idAtRequestTime = selectedConversation._id;
-
-//     const loadMessages = async () => {
-//   const data = await getMessages(idAtRequestTime);
-//   // ignore if the user has since switched conversations
-//   if (idAtRequestTime !== selectedConversation?._id)
-//     return;
-//   dispatch(setMessages(Array.isArray(data) ? data : []));
-// };
-
-//     loadMessages();
-//   }, [selectedConversation?._id, justCreated, dispatch]);
-
-//   useEffect(() => {
-//     scrollRef.current?.scrollTo({
-//       top: scrollRef.current.scrollHeight,
-//       behavior: "smooth",
-//     });
-//   }, [messages, thinking]);
-
-//   return (
-//     <div className="flex-1 flex flex-col min-w-0 relative">
-//       {/* ...styles unchanged... */}
-
-//       <Nav />
-
-//       <MessageList
-//         messages={messages}
-//         thinking={thinking}
-//         activeAgent={activeAgent}
-//         onSuggest={(text) => setInput(text)}
-//         onOpenArtifact={setActiveArtifact}
-//         scrollRef={scrollRef}
-//       />
-
-//       <ChatInput
-//         input={input}
-//         setInput={setInput}
-//         mode={mode}
-//         setMode={setMode}
-//         setThinking={setThinking}
-//         setActiveAgent={setActiveAgent}
-//       />
-
-//       {activeArtifact && (
-//         <ArtifactPanel
-//           artifact={activeArtifact}
-//           onClose={() => setActiveArtifact(null)}
-//         />
-//       )}
-//     </div>
-//   );
-// }
-
-// export default ChatArea;
-
-// import React, { useEffect, useRef, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
+// import { motion, AnimatePresence } from "motion/react";
 // import Nav from "./Nav";
 // import MessageList from "./MessageList";
 // import ChatInput from "./ChatInput";
@@ -106,8 +9,26 @@
 // import { setMessages } from "../redux/messageSlice";
 // import { setJustCreated } from "../redux/conversationSlice";
 
+// const MOBILE_BREAKPOINT = 768;
+// const SPRING = { type: "spring", stiffness: 320, damping: 34, mass: 0.9 };
+
+// function useIsMobile() {
+//   const [isMobile, setIsMobile] = useState(
+//     typeof window !== "undefined" ? window.innerWidth < MOBILE_BREAKPOINT : false,
+//   );
+//   useEffect(() => {
+//     const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+//     const handler = (e) => setIsMobile(e.matches);
+//     handler(mq);
+//     mq.addEventListener("change", handler);
+//     return () => mq.removeEventListener("change", handler);
+//   }, []);
+//   return isMobile;
+// }
+
 // function ChatArea() {
 //   const dispatch = useDispatch();
+//   const isMobile = useIsMobile();
 
 //   const { selectedConversation, justCreated } = useSelector(
 //     (state) => state.conversation,
@@ -118,163 +39,100 @@
 //   const [input, setInput] = useState("");
 //   const [activeAgent, setActiveAgent] = useState(null);
 //   const [thinking, setThinking] = useState(false);
-//   const [activeArtifact, setActiveArtifact] = useState(null);
+
+//   const [panelOpen, setPanelOpen] = useState(false);
+//   const [selectedArtifactId, setSelectedArtifactId] = useState(null);
+//   const [panelWidth, setPanelWidth] = useState(null);
+
 //   const scrollRef = useRef(null);
 
-//   // Mirror justCreated into a ref so toggling it doesn't retrigger the fetch effect
 //   const justCreatedRef = useRef(justCreated);
 //   useEffect(() => {
 //     justCreatedRef.current = justCreated;
 //   }, [justCreated]);
 
-//   // Fetch messages whenever the selected conversation changes
 //   useEffect(() => {
 //     if (!selectedConversation?._id) {
 //       dispatch(setMessages([]));
 //       return;
 //     }
-
 //     if (justCreatedRef.current) {
-//       // Freshly created client-side — nothing on the backend yet, skip fetch.
 //       dispatch(setJustCreated(false));
 //       return;
 //     }
-
 //     const idAtRequestTime = selectedConversation._id;
-
 //     const loadMessages = async () => {
 //       const data = await getMessages(idAtRequestTime);
-//       // ignore if the user has since switched conversations
 //       if (idAtRequestTime !== selectedConversation?._id) return;
 //       dispatch(setMessages(Array.isArray(data) ? data : []));
 //     };
-
 //     loadMessages();
 //   }, [selectedConversation?._id, dispatch]);
 
-//   useEffect(() => {
-//     scrollRef.current?.scrollTo({
-//       top: scrollRef.current.scrollHeight,
-//       behavior: "smooth",
+// useEffect(() => {
+//   const el = scrollRef.current;
+//   if (!el) return;
+
+//   requestAnimationFrame(() => {
+//     el.scrollTo({
+//       top: el.scrollHeight,
+//       behavior: "auto",
 //     });
-//   }, [messages, thinking]);
+//   });
+// }, [messages]);
 
-//   return (
-//     <div className="flex-1 flex flex-col min-w-0 relative">
-//       <Nav />
-
-//       <MessageList
-//         messages={messages}
-//         thinking={thinking}
-//         activeAgent={activeAgent}
-//         onSuggest={(text) => setInput(text)}
-//         onOpenArtifact={setActiveArtifact}
-//         scrollRef={scrollRef}
-//       />
-
-//       <ChatInput
-//         input={input}
-//         setInput={setInput}
-//         mode={mode}
-//         setMode={setMode}
-//         setThinking={setThinking}
-//         setActiveAgent={setActiveAgent}
-//       />
-
-//       {activeArtifact && (
-//         <ArtifactPanel
-//           artifact={activeArtifact}
-//           onClose={() => setActiveArtifact(null)}
-//         />
-//       )}
-//     </div>
-//   );
-// }
-
-// export default ChatArea;
-
-
-
-
-
-
-
-
-// import React, { useEffect, useRef, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import Nav from "./Nav";
-// import MessageList from "./MessageList";
-// import ChatInput from "./ChatInput";
-// import ArtifactPanel from "../components/ArtifactPanel";
-// import getMessages from "../features/getMessages";
-// import { setMessages } from "../redux/messageSlice";
-// import { setJustCreated } from "../redux/conversationSlice";
-
-// function ChatArea() {
-//   const dispatch = useDispatch();
-
-//   const { selectedConversation, justCreated } = useSelector(
-//     (state) => state.conversation,
-//   );
-//   const messages = useSelector((state) => state.message.messages ?? []);
-
-//   const [mode, setMode] = useState("auto");
-//   const [input, setInput] = useState("");
-//   const [activeAgent, setActiveAgent] = useState(null);
-//   const [thinking, setThinking] = useState(false);
-//   const [activeArtifact, setActiveArtifact] = useState(null);
-//   const scrollRef = useRef(null);
-
-//   // Mirror justCreated into a ref so toggling it doesn't retrigger the fetch effect
-//   const justCreatedRef = useRef(justCreated);
-//   useEffect(() => {
-//     justCreatedRef.current = justCreated;
-//   }, [justCreated]);
-
-//   // Fetch messages whenever the selected conversation changes
-//   useEffect(() => {
-//     if (!selectedConversation?._id) {
-//       dispatch(setMessages([]));
-//       return;
-//     }
-
-//     if (justCreatedRef.current) {
-//       // Freshly created client-side — nothing on the backend yet, skip fetch.
-//       dispatch(setJustCreated(false));
-//       return;
-//     }
-
-//     const idAtRequestTime = selectedConversation._id;
-
-//     const loadMessages = async () => {
-//       const data = await getMessages(idAtRequestTime);
-//       // ignore if the user has since switched conversations
-//       if (idAtRequestTime !== selectedConversation?._id) return;
-//       dispatch(setMessages(Array.isArray(data) ? data : []));
-//     };
-
-//     loadMessages();
-//   }, [selectedConversation?._id, dispatch]);
-
-//   useEffect(() => {
-//     scrollRef.current?.scrollTo({
-//       top: scrollRef.current.scrollHeight,
-//       behavior: "smooth",
+//   const allArtifacts = useMemo(() => {
+//     const list = [];
+//     messages.forEach((m, mi) => {
+//       (m.artifacts || []).forEach((artifact, ai) => {
+//         list.push({
+//           id: `${mi}-${ai}`,
+//           artifact,
+//           agent: m.agent,
+//           createdAt: m.createdAt || m.timestamp || null,
+//         });
+//       });
 //     });
-//   }, [messages, thinking]);
+//     return list;
+//   }, [messages]);
+
+//   useEffect(() => {
+//     setPanelOpen(false);
+//     setSelectedArtifactId(null);
+//     setPanelWidth(null);
+//   }, [selectedConversation?._id]);
+
+//   const handleOpenArtifactFromMessage = (artifact) => {
+//     const entry = allArtifacts.find((e) => e.artifact === artifact);
+//     setSelectedArtifactId(entry ? entry.id : null);
+//     setPanelOpen(true);
+//   };
+
+//   const handleOpenArtifactsList = () => {
+//     setSelectedArtifactId(null);
+//     setPanelOpen(true);
+//   };
+
+//   const handleClosePanel = () => setPanelOpen(false);
+
+//   // Desktop target width — same clamp logic as before, just read once so
+//   // both the motion.div's animate target and its layout math agree.
+//   const desktopWidth = `clamp(380px, ${panelWidth ?? 440}px, min(880px, 65vw))`;
 
 //   return (
 //     <div className="flex-1 flex min-w-0 h-full relative overflow-hidden">
-//       {/* Chat column — shrinks when the artifact panel opens */}
-//       <div className="flex-1 flex flex-col min-w-0 h-full">
-//         <Nav />
+//       <div className="flex-1 flex flex-col min-w-0 h-full relative">
+//         <Nav
+//           artifactCount={allArtifacts.length}
+//           onOpenArtifacts={handleOpenArtifactsList}
+//         />
 
 //         <MessageList
 //           messages={messages}
 //           thinking={thinking}
 //           activeAgent={activeAgent}
 //           onSuggest={(text) => setInput(text)}
-//           onOpenArtifact={setActiveArtifact}
+//           onOpenArtifact={handleOpenArtifactFromMessage}
 //           scrollRef={scrollRef}
 //         />
 
@@ -288,12 +146,61 @@
 //         />
 //       </div>
 
-//       {/* Artifact panel — docked on the right, sibling not overlay */}
-//       {activeArtifact && (
-//         <ArtifactPanel
-//           artifact={activeArtifact}
-//           onClose={() => setActiveArtifact(null)}
-//         />
+//       {isMobile ? (
+//         // Mobile: full-screen slide-in overlay with backdrop, same language
+//         // as the sidebar drawer — not a squeezed inline column.
+//         <AnimatePresence>
+//           {panelOpen && (
+//             <>
+//               <motion.div
+//                 key="artifact-backdrop"
+//                 initial={{ opacity: 0 }}
+//                 animate={{ opacity: 1 }}
+//                 exit={{ opacity: 0 }}
+//                 transition={{ duration: 0.2, ease: "easeOut" }}
+//                 onClick={handleClosePanel}
+//                 className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
+//               />
+//               <motion.div
+//                 key="artifact-panel"
+//                 initial={{ x: "100%" }}
+//                 animate={{ x: 0 }}
+//                 exit={{ x: "100%" }}
+//                 transition={SPRING}
+//                 className="fixed inset-y-0 right-0 z-40 w-full shadow-2xl"
+//                 style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+//               >
+//                 <ArtifactPanel
+//                   artifacts={allArtifacts}
+//                   selectedId={selectedArtifactId}
+//                   onSelect={setSelectedArtifactId}
+//                   onClose={handleClosePanel}
+//                   onWidthChange={setPanelWidth}
+//                 />
+//               </motion.div>
+//             </>
+//           )}
+//         </AnimatePresence>
+//       ) : (
+//         // Desktop: animated-width inline column, now spring-driven for a
+//         // smoother open/close feel instead of a flat CSS ease.
+//         <motion.div
+//           initial={false}
+//           animate={{
+//             width: panelOpen ? desktopWidth : "0px",
+//             opacity: panelOpen ? 1 : 0,
+//           }}
+//           transition={SPRING}
+//           className="shrink-0 h-full overflow-hidden"
+//         >
+//           <ArtifactPanel
+//             artifacts={allArtifacts}
+//             selectedId={selectedArtifactId}
+//             onSelect={setSelectedArtifactId}
+//             onClose={handleClosePanel}
+//             onWidthChange={setPanelWidth}
+//           />
+//         </motion.div>
 //       )}
 //     </div>
 //   );
@@ -301,13 +208,9 @@
 
 // export default ChatArea;
 
-
-
-
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FileCode2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import Nav from "./Nav";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
@@ -316,8 +219,39 @@ import getMessages from "../features/getMessages";
 import { setMessages } from "../redux/messageSlice";
 import { setJustCreated } from "../redux/conversationSlice";
 
+const MOBILE_BREAKPOINT = 768;
+
+const COMPACT_BREAKPOINT = 1024;
+
+const PANEL_MIN_WIDTH = 380;
+const PANEL_MAX_WIDTH = 880;
+const PANEL_MAX_VIEWPORT_RATIO = 0.65;
+
+const SPRING = { type: "spring", stiffness: 320, damping: 34, mass: 0.9 };
+
+function useViewport() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1280,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return width;
+}
+
 function ChatArea() {
   const dispatch = useDispatch();
+  const viewportWidth = useViewport();
+  const isMobile = viewportWidth < MOBILE_BREAKPOINT;
+  // Full-screen overlay covers both phones and the "too narrow to squeeze"
+  // desktop/tablet range described above.
+  const usePanelOverlay = viewportWidth < COMPACT_BREAKPOINT;
 
   const { selectedConversation, justCreated } = useSelector(
     (state) => state.conversation,
@@ -329,55 +263,47 @@ function ChatArea() {
   const [activeAgent, setActiveAgent] = useState(null);
   const [thinking, setThinking] = useState(false);
 
-  // Artifact panel state: whether it's open, and which artifact (by id) is
-  // selected within it. selectedArtifactId === null means "show the list".
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedArtifactId, setSelectedArtifactId] = useState(null);
-  // Measured width (px) the currently open file actually needs; null = default.
   const [panelWidth, setPanelWidth] = useState(null);
 
   const scrollRef = useRef(null);
 
-  // Mirror justCreated into a ref so toggling it doesn't retrigger the fetch effect
   const justCreatedRef = useRef(justCreated);
   useEffect(() => {
     justCreatedRef.current = justCreated;
   }, [justCreated]);
 
-  // Fetch messages whenever the selected conversation changes
   useEffect(() => {
     if (!selectedConversation?._id) {
       dispatch(setMessages([]));
       return;
     }
-
     if (justCreatedRef.current) {
-      // Freshly created client-side — nothing on the backend yet, skip fetch.
       dispatch(setJustCreated(false));
       return;
     }
-
     const idAtRequestTime = selectedConversation._id;
-
     const loadMessages = async () => {
       const data = await getMessages(idAtRequestTime);
-      // ignore if the user has since switched conversations
       if (idAtRequestTime !== selectedConversation?._id) return;
       dispatch(setMessages(Array.isArray(data) ? data : []));
     };
-
     loadMessages();
   }, [selectedConversation?._id, dispatch]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, thinking]);
+    const el = scrollRef.current;
+    if (!el) return;
 
-  // Flatten every artifact across every message into one addressable list,
-  // so the persistent artifacts button can show "all artifacts, like Claude".
+    requestAnimationFrame(() => {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: "auto",
+      });
+    });
+  }, [messages]);
+
   const allArtifacts = useMemo(() => {
     const list = [];
     messages.forEach((m, mi) => {
@@ -393,8 +319,6 @@ function ChatArea() {
     return list;
   }, [messages]);
 
-  // Reset the panel whenever the conversation changes so a stale artifact
-  // from the previous chat can't stay selected.
   useEffect(() => {
     setPanelOpen(false);
     setSelectedArtifactId(null);
@@ -412,29 +336,24 @@ function ChatArea() {
     setPanelOpen(true);
   };
 
-  const handleClosePanel = () => {
-    setPanelOpen(false);
-  };
+  const handleClosePanel = () => setPanelOpen(false);
+
+  const desktopWidthPx = useMemo(() => {
+    const viewportCap = viewportWidth * PANEL_MAX_VIEWPORT_RATIO;
+    const upperBound = Math.min(PANEL_MAX_WIDTH, viewportCap);
+    const requested = panelWidth ?? 440;
+    return Math.round(
+      Math.max(PANEL_MIN_WIDTH, Math.min(requested, upperBound)),
+    );
+  }, [panelWidth, viewportWidth]);
 
   return (
     <div className="flex-1 flex min-w-0 h-full relative overflow-hidden">
-      {/* Chat column — width is fixed via flex-1, unaffected by the panel animating */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        <Nav />
-
-        {/* Persistent "all artifacts" button — always visible, like Claude's */}
-        <button
-          onClick={handleOpenArtifactsList}
-          title="View artifacts"
-          className="absolute top-3 right-4 z-10 flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full border border-black/[0.08] bg-white text-black/55 shadow-sm hover:text-[#1E7A56] hover:border-[#1E7A56]/30 active:scale-95 transition-all duration-150"
-        >
-          <FileCode2 size={14} />
-          {allArtifacts.length > 0 && (
-            <span className="text-[11px] font-[IBM_Plex_Mono,monospace] font-medium leading-none">
-              {allArtifacts.length}
-            </span>
-          )}
-        </button>
+        <Nav
+          artifactCount={allArtifacts.length}
+          onOpenArtifacts={handleOpenArtifactsList}
+        />
 
         <MessageList
           messages={messages}
@@ -455,42 +374,62 @@ function ChatArea() {
         />
       </div>
 
-      {/*
-        Artifact panel wrapper — this is what animates, not the panel's own
-        internals. The panel always fills whatever width this wrapper gives
-        it; this wrapper clips it with overflow-hidden while tweening width
-        and opacity. Width is a CSS clamp(): a 440px floor, growing to fit
-        whatever the open file actually needs (reported via onWidthChange),
-        capped so it never eats more than ~65% of the viewport or crushes
-        the chat column below a usable size.
-      */}
-      <div
-        className="shrink-0 h-full overflow-hidden transition-[width,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        style={{
-          width: panelOpen
-            ? `clamp(380px, ${panelWidth ?? 440}px, min(880px, 65vw))`
-            : "0px",
-          opacity: panelOpen ? 1 : 0,
-        }}
-      >
-        <ArtifactPanel
-          artifacts={allArtifacts}
-          selectedId={selectedArtifactId}
-          onSelect={setSelectedArtifactId}
-          onClose={handleClosePanel}
-          onWidthChange={setPanelWidth}
-        />
-      </div>
+      {usePanelOverlay ? (
+        <AnimatePresence>
+          {panelOpen && (
+            <>
+              <motion.div
+                key="artifact-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={handleClosePanel}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
+              />
+              <motion.div
+                key="artifact-panel"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={SPRING}
+                className={`fixed inset-y-0 right-0 z-40 shadow-2xl ${
+                  isMobile ? "w-full" : "w-full max-w-[520px]"
+                }`}
+                style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+              >
+                <ArtifactPanel
+                  artifacts={allArtifacts}
+                  selectedId={selectedArtifactId}
+                  onSelect={setSelectedArtifactId}
+                  onClose={handleClosePanel}
+                  onWidthChange={setPanelWidth}
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      ) : (
+        <motion.div
+          initial={false}
+          animate={{
+            width: panelOpen ? desktopWidthPx : 0,
+            opacity: panelOpen ? 1 : 0,
+          }}
+          transition={SPRING}
+          className="shrink-0 h-full overflow-hidden"
+        >
+          <ArtifactPanel
+            artifacts={allArtifacts}
+            selectedId={selectedArtifactId}
+            onSelect={setSelectedArtifactId}
+            onClose={handleClosePanel}
+            onWidthChange={setPanelWidth}
+          />
+        </motion.div>
+      )}
     </div>
   );
 }
 
 export default ChatArea;
-
-
-
-
-
-
-
-

@@ -1,313 +1,3 @@
-// import React, { useMemo, useState } from "react";
-// import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-// import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-// import { X, Copy, Check, Download, Code2, Eye, FileCode2 } from "lucide-react";
-
-// const EXT_BY_LANGUAGE = {
-//   javascript: "js",
-//   jsx: "jsx",
-//   typescript: "ts",
-//   tsx: "tsx",
-//   python: "py",
-//   bash: "sh",
-//   shell: "sh",
-//   sh: "sh",
-//   css: "css",
-//   html: "html",
-//   markup: "html",
-//   json: "json",
-//   markdown: "md",
-// };
-
-// const LANGUAGE_BY_EXT = {
-//   js: "javascript",
-//   jsx: "jsx",
-//   ts: "typescript",
-//   tsx: "tsx",
-//   py: "python",
-//   css: "css",
-//   html: "markup",
-//   json: "json",
-//   md: "markdown",
-//   sh: "bash",
-//   c: "c",
-//   h: "c",
-//   cpp: "cpp",
-//   cc: "cpp",
-//   hpp: "cpp",
-//   java: "java",
-//   go: "go",
-//   rs: "rust",
-//   rb: "ruby",
-//   php: "php",
-//   cs: "csharp",
-//   sql: "sql",
-//   yml: "yaml",
-//   yaml: "yaml",
-//   xml: "markup",
-// };
-
-// function getFileIcon(name) {
-//   if (/\.(html?)$/i.test(name)) return "🌐";
-//   if (/\.(css)$/i.test(name)) return "🎨";
-//   if (/\.(js|jsx|ts|tsx)$/i.test(name)) return "⚡";
-//   if (/\.(py)$/i.test(name)) return "🐍";
-//   if (/\.(sh)$/i.test(name)) return "💻";
-//   if (/\.(json)$/i.test(name)) return "{ }";
-//   return "📄";
-// }
-
-// function getLanguage(file) {
-//   if (file?.language) return file.language;
-//   const ext = file?.path?.split(".").pop()?.toLowerCase();
-//   return LANGUAGE_BY_EXT[ext] || "text";
-// }
-
-// // Handles both artifact shapes:
-// // - new structured shape: { files: [{ path, language, content }] }
-// // - old single-snippet fallback: { type: "markdown", language, code }
-// // Also handles files that only have `name` (no `path`) — e.g. a fresh
-// // agent response before it's round-tripped through the DB normalizer —
-// // by deriving `path` from `name` so language detection still works.
-// function normalizeArtifact(artifact) {
-//   if (!artifact) return [];
-
-//   if (Array.isArray(artifact.files) && artifact.files.length > 0) {
-//     return artifact.files.map((file) => {
-//       const path = file.path || file.name || "file.txt";
-//       return {
-//         ...file,
-//         path,
-//         name: file.name || path.split("/").pop(),
-//       };
-//     });
-//   }
-
-//   if (artifact.code) {
-//     const lang = (artifact.language || "text").toLowerCase();
-//     const ext = EXT_BY_LANGUAGE[lang] || "txt";
-//     const name = `snippet.${ext}`;
-//     return [
-//       {
-//         path: name,
-//         name,
-//         language: lang,
-//         content: artifact.code,
-//       },
-//     ];
-//   }
-
-//   return [];
-// }
-
-// function buildPreviewDoc(files) {
-//   const html = files.find((f) => /\.html?$/i.test(f.path));
-//   const css = files.find((f) => /\.css$/i.test(f.path));
-//   const js = files.find((f) => /\.(js|jsx)$/i.test(f.path));
-
-//   if (!html) return null;
-
-//   let doc = html.content;
-
-//   if (css) {
-//     doc = doc.includes("</head>")
-//       ? doc.replace("</head>", `<style>${css.content}</style></head>`)
-//       : `<style>${css.content}</style>${doc}`;
-//   }
-
-//   if (js) {
-//     doc = doc.includes("</body>")
-//       ? doc.replace("</body>", `<script>${js.content}</script></body>`)
-//       : `${doc}<script>${js.content}</script>`;
-//   }
-
-//   return doc;
-// }
-
-// function ArtifactPanel({ artifact, onClose }) {
-//   const files = useMemo(() => normalizeArtifact(artifact), [artifact]);
-//   const [activeFileIdx, setActiveFileIdx] = useState(0);
-//   const [view, setView] = useState("code");
-//   const [copied, setCopied] = useState(false);
-
-//   const activeFile = files[activeFileIdx];
-
-//   const previewDoc = useMemo(() => buildPreviewDoc(files), [files]);
-//   const canPreview = Boolean(previewDoc);
-
-//   const handleCopy = async () => {
-//     if (!activeFile) return;
-//     try {
-//       await navigator.clipboard.writeText(activeFile.content);
-//       setCopied(true);
-//       setTimeout(() => setCopied(false), 1500);
-//     } catch (err) {
-//       console.error("copy failed", err);
-//     }
-//   };
-
-//   const handleDownload = () => {
-//     if (!activeFile) return;
-//     const blob = new Blob([activeFile.content], { type: "text/plain" });
-//     const url = URL.createObjectURL(blob);
-//     const a = document.createElement("a");
-//     a.href = url;
-//     a.download =
-//       activeFile.name || activeFile.path?.split("/").pop() || "download.txt";
-//     a.click();
-//     URL.revokeObjectURL(url);
-//   };
-
-//   if (!artifact || files.length === 0) return null;
-
-//   return (
-//     <aside className="relative h-full w-full sm:w-[50%] min-w-[360px] border-l border-black/[0.07] bg-white/70 backdrop-blur-xl flex flex-col z-20 motion-safe:animate-[fadeUp_0.3s_ease-out_both] shadow-[-8px_0_24px_rgba(0,0,0,0.04)]">
-//       <div className="flex items-center gap-3 px-4 h-14 border-b border-black/[0.07] bg-white/35 backdrop-blur-xl shrink-0">
-//         <div
-//           className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-//           style={{ background: "rgba(30,122,86,0.1)" }}
-//         >
-//           <FileCode2 size={15} className="text-[#1E7A56]" />
-//         </div>
-
-//         <div className="min-w-0 flex-1">
-//           <p className="text-sm font-medium text-black/85 truncate">
-//             {artifact.title || "Artifact"}
-//           </p>
-//           <p className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate">
-//             {artifact.description ||
-//               `${files.length} file${files.length > 1 ? "s" : ""}`}
-//           </p>
-//         </div>
-
-//         <button
-//           onClick={onClose}
-//           title="Close"
-//           className="w-8 h-8 shrink-0 rounded-md flex items-center justify-center text-black/40 hover:text-black hover:bg-black/[0.06] transition-colors"
-//         >
-//           <X size={16} />
-//         </button>
-//       </div>
-
-//       {files.length > 1 && (
-//         <div className="flex items-center gap-1 px-3 pt-3 overflow-x-auto shrink-0">
-//           {files.map((file, idx) => {
-//             const isActive = idx === activeFileIdx;
-//             return (
-//               <button
-//                 key={file.path + idx}
-//                 onClick={() => setActiveFileIdx(idx)}
-//                 className={`shrink-0 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors ${
-//                   isActive
-//                     ? "bg-[#1E7A56]/10 text-[#1E7A56] border border-[#1E7A56]/30"
-//                     : "text-black/45 hover:bg-black/[0.04] hover:text-black/70 border border-transparent"
-//                 }`}
-//               >
-//                 <span>{getFileIcon(file.path)}</span>
-//                 <span className="truncate max-w-[150px]">
-//                   {file.path.split("/").pop()}
-//                 </span>
-//               </button>
-//             );
-//           })}
-//         </div>
-//       )}
-
-//       <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
-//         <div className="flex items-center gap-1 bg-black/[0.04] rounded-md p-0.5">
-//           <button
-//             onClick={() => setView("code")}
-//             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-//               view === "code"
-//                 ? "bg-white text-black/80 shadow-sm"
-//                 : "text-black/40 hover:text-black/70"
-//             }`}
-//           >
-//             <Code2 size={13} /> Code
-//           </button>
-
-//           {canPreview && (
-//             <button
-//               onClick={() => setView("preview")}
-//               className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-//                 view === "preview"
-//                   ? "bg-white text-black/80 shadow-sm"
-//                   : "text-black/40 hover:text-black/70"
-//               }`}
-//             >
-//               <Eye size={13} /> Preview
-//             </button>
-//           )}
-//         </div>
-
-//         {view === "code" && (
-//           <div className="flex items-center gap-1">
-//             <button
-//               onClick={handleCopy}
-//               title="Copy file"
-//               className="w-7 h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] transition-colors"
-//             >
-//               {copied ? (
-//                 <Check size={14} className="text-[#1E7A56]" />
-//               ) : (
-//                 <Copy size={14} />
-//               )}
-//             </button>
-//             <button
-//               onClick={handleDownload}
-//               title="Download file"
-//               className="w-7 h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] transition-colors"
-//             >
-//               <Download size={14} />
-//             </button>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className="flex-1 overflow-hidden px-4 pb-4">
-//         {view === "code" ? (
-//           <div className="h-full rounded-lg border border-black/[0.07] overflow-auto bg-[#1e1e1e]">
-//             <SyntaxHighlighter
-//               language={getLanguage(activeFile)}
-//               style={vscDarkPlus}
-//               showLineNumbers
-//               customStyle={{
-//                 margin: 0,
-//                 padding: "14px",
-//                 fontSize: "12.5px",
-//                 lineHeight: 1.6,
-//                 background: "transparent",
-//                 minHeight: "100%",
-//               }}
-//               lineNumberStyle={{
-//                 color: "rgba(255,255,255,0.25)",
-//                 minWidth: "2.2em",
-//               }}
-//             >
-//               {activeFile?.content || ""}
-//             </SyntaxHighlighter>
-//           </div>
-//         ) : (
-//           <div className="h-full rounded-lg border border-black/[0.07] overflow-hidden bg-white">
-//             <iframe
-//               title="artifact-preview"
-//               srcDoc={previewDoc}
-//               sandbox="allow-scripts"
-//               className="w-full h-full"
-//             />
-//           </div>
-//         )}
-//       </div>
-//     </aside>
-//   );
-// }
-
-// export default ArtifactPanel;
-
-
-
-
-
 // import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 // import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 // import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -322,6 +12,8 @@
 //   ChevronLeft,
 //   Files,
 // } from "lucide-react";
+
+// const MOBILE_BREAKPOINT = 768;
 
 // const EXT_BY_LANGUAGE = {
 //   javascript: "js",
@@ -384,6 +76,15 @@
 //   yaml: "#CB171E",
 // };
 
+// // A line only counts toward "let the panel grow wider" up to this many
+// // characters. Minified / single-line files (bundled JS, compressed HTML)
+// // can be thousands of characters on one line — treating that as a request
+// // to blow the panel out to some huge width just produces a giant box with
+// // a single unreadable horizontal-scroll line (the old bug). Past this
+// // threshold we stop growing and instead let the code area WRAP the line,
+// // which is what actually makes a giant single line readable.
+// const WRAP_AFTER_CHARS = 180;
+
 // function getExt(name = "") {
 //   return name.split(".").pop()?.toLowerCase() || "";
 // }
@@ -395,7 +96,7 @@
 // function getLanguage(file) {
 //   if (file?.language) return file.language;
 //   const ext = file?.path?.split(".").pop()?.toLowerCase();
-//   return LANGUAGE_BY_EXT[ext] || "text";
+//   return LANGUAGE_BY_EXT[ext] || "markup"; // or "clike" — never "text"
 // }
 
 // // Handles both artifact shapes:
@@ -434,7 +135,9 @@
 // }
 
 // function buildPreviewDoc(files) {
-//   const html = files.find((f) => /\.html?$/i.test(f.path));
+//   const html =
+//     files.find((f) => f.path === "index.html") ??
+//     files.find((f) => /\.html?$/i.test(f.path));
 //   const css = files.find((f) => /\.css$/i.test(f.path));
 //   const js = files.find((f) => /\.(js|jsx)$/i.test(f.path));
 
@@ -474,16 +177,19 @@
 // /* ------------------------------ list view ------------------------------ */
 
 // function ArtifactListRow({ entry, onOpen }) {
-//   const files = useMemo(() => normalizeArtifact(entry.artifact), [entry.artifact]);
+//   const files = useMemo(
+//     () => normalizeArtifact(entry.artifact),
+//     [entry.artifact],
+//   );
 //   const primary = files[0];
 //   const accent = getAccent(primary?.path || primary?.name);
-//   const title = entry.artifact.title || primary?.name || "Artifact";
+//   const title = primary?.name || entry.artifact.title || "Artifact";
 //   const when = relativeTime(entry.createdAt);
 
 //   return (
 //     <button
 //       onClick={onOpen}
-//       className="w-full text-left rounded-xl border border-black/[0.07] bg-white px-3.5 py-3 flex items-center gap-3 transition-all duration-150 hover:border-black/[0.14] hover:shadow-[0_4px_14px_rgba(20,21,26,0.06)] active:scale-[0.99]"
+//       className="w-full text-left rounded-xl border border-black/[0.07] bg-white px-3 py-2.5 sm:px-3.5 sm:py-3 flex items-center gap-3 transition-all duration-150 hover:border-black/[0.14] hover:shadow-[0_4px_14px_rgba(20,21,26,0.06)] active:scale-[0.99]"
 //     >
 //       <span
 //         className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -492,7 +198,9 @@
 //         <FileCode2 size={15} style={{ color: accent }} />
 //       </span>
 //       <div className="min-w-0 flex-1">
-//         <p className="text-[13.5px] font-medium text-black/85 truncate">{title}</p>
+//         <p className="text-[13.5px] font-medium text-black/85 truncate">
+//           {title}
+//         </p>
 //         <p className="text-[11.5px] font-[IBM_Plex_Mono,monospace] text-black/40 truncate">
 //           {files.length} file{files.length !== 1 ? "s" : ""}
 //           {entry.agent?.label ? ` · ${entry.agent.label}` : ""}
@@ -506,7 +214,7 @@
 
 // function ArtifactListView({ entries, onOpen }) {
 //   return (
-//     <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+//     <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 sm:px-4 space-y-2">
 //       {entries.length === 0 ? (
 //         <div className="h-full flex flex-col items-center justify-center text-center px-6 py-16">
 //           <span
@@ -515,14 +223,20 @@
 //           >
 //             <Files size={17} className="text-[#1E7A56]" />
 //           </span>
-//           <p className="text-[13.5px] font-medium text-black/70">No artifacts yet</p>
+//           <p className="text-[13.5px] font-medium text-black/70">
+//             No artifacts yet
+//           </p>
 //           <p className="text-[12px] text-black/40 mt-1 max-w-[220px]">
 //             Files Vortex generates in this conversation will show up here.
 //           </p>
 //         </div>
 //       ) : (
 //         entries.map((entry) => (
-//           <ArtifactListRow key={entry.id} entry={entry} onOpen={() => onOpen(entry.id)} />
+//           <ArtifactListRow
+//             key={entry.id}
+//             entry={entry}
+//             onOpen={() => onOpen(entry.id)}
+//           />
 //         ))
 //       )}
 //     </div>
@@ -531,11 +245,15 @@
 
 // /* ----------------------------- detail view ------------------------------ */
 
-// function ArtifactDetailView({ entry, onBack, showBack }) {
-//   const files = useMemo(() => normalizeArtifact(entry.artifact), [entry.artifact]);
+// function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
+//   const files = useMemo(
+//     () => normalizeArtifact(entry.artifact),
+//     [entry.artifact],
+//   );
 //   const [activeFileIdx, setActiveFileIdx] = useState(0);
 //   const [view, setView] = useState("code");
 //   const [copied, setCopied] = useState(false);
+//   const codeWrapRef = useRef(null);
 
 //   // Reset to the first file whenever a different artifact is opened.
 //   useLayoutEffect(() => {
@@ -544,8 +262,47 @@
 //   }, [entry.id]);
 
 //   const activeFile = files[activeFileIdx];
+
+//   // Longest line across all files, in characters — used to decide how far
+//   // the panel should be allowed to grow on desktop.
+//   const longestLineChars = useMemo(() => {
+//     if (files.length === 0) return 0;
+//     return Math.max(
+//       ...files.map((file) => {
+//         const lines = (file.content || "").split("\n");
+//         return Math.max(0, ...lines.map((line) => line.length));
+//       }),
+//     );
+//   }, [files]);
+
+//   // Any single line longer than the threshold (minified/bundled content,
+//   // a long URL, etc.) — in that case we stop trying to widen the panel to
+//   // fit it and wrap it instead, so it stays readable without forcing a
+//   // giant panel or a horizontal-only scrollbar.
+//   const shouldWrapLongLines = longestLineChars > WRAP_AFTER_CHARS;
+//   const cappedLineChars = Math.min(longestLineChars, WRAP_AFTER_CHARS);
+//   const maxContentWidth = cappedLineChars * 8;
+
 //   const previewDoc = useMemo(() => buildPreviewDoc(files), [files]);
 //   const canPreview = Boolean(previewDoc);
+
+//   // Let the panel grow to comfortably fit moderately long lines on desktop,
+//   // but never force an oversized panel on mobile — there's no room to give
+//   // it there — and never grow past a sane cap for pathologically long
+//   // single lines (those wrap instead, see shouldWrapLongLines above).
+//   useLayoutEffect(() => {
+//     if (!onWidthChange) return;
+//     if (view !== "code") return;
+//     if (
+//       typeof window !== "undefined" &&
+//       window.innerWidth < MOBILE_BREAKPOINT
+//     ) {
+//       onWidthChange(null);
+//       return;
+//     }
+//     const width = Math.max(800, Math.min(1400, maxContentWidth + 80));
+//     onWidthChange(width);
+//   }, [view, maxContentWidth, onWidthChange]);
 
 //   const tabRefs = useRef([]);
 //   const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
@@ -581,7 +338,8 @@
 //     const url = URL.createObjectURL(blob);
 //     const a = document.createElement("a");
 //     a.href = url;
-//     a.download = activeFile.name || activeFile.path?.split("/").pop() || "download.txt";
+//     a.download =
+//       activeFile.name || activeFile.path?.split("/").pop() || "download.txt";
 //     a.click();
 //     URL.revokeObjectURL(url);
 //   };
@@ -590,9 +348,9 @@
 
 //   return (
 //     <>
-//       {/* File tabs */}
-//       {files.length > 1 && (
-//         <div className="relative flex items-center gap-1 px-3 pt-3 overflow-x-auto shrink-0">
+//       {/* File tabs — only relevant while browsing code, not while previewing */}
+//       {files.length > 1 && view === "code" && (
+//         <div className="relative flex items-center gap-1 px-2.5 sm:px-3 pt-3 overflow-x-auto shrink-0">
 //           {files.map((file, idx) => {
 //             const isActive = idx === activeFileIdx;
 //             const tabAccent = getAccent(file.path);
@@ -601,15 +359,21 @@
 //                 key={file.path + idx}
 //                 ref={(el) => (tabRefs.current[idx] = el)}
 //                 onClick={() => setActiveFileIdx(idx)}
-//                 className={`relative shrink-0 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors duration-200 ${
-//                   isActive ? "text-black/85" : "text-black/40 hover:text-black/70 hover:bg-black/[0.03]"
+//                 className={`relative shrink-0 flex items-center gap-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors duration-200 ${
+//                   isActive
+//                     ? "text-black/85"
+//                     : "text-black/40 hover:text-black/70 hover:bg-black/[0.03]"
 //                 }`}
 //               >
 //                 <span
 //                   className="w-1.5 h-1.5 rounded-full shrink-0"
-//                   style={{ background: isActive ? tabAccent : "rgba(0,0,0,0.18)" }}
+//                   style={{
+//                     background: isActive ? tabAccent : "rgba(0,0,0,0.18)",
+//                   }}
 //                 />
-//                 <span className="truncate max-w-[140px]">{file.path.split("/").pop()}</span>
+//                 <span className="truncate max-w-[100px] sm:max-w-[140px]">
+//                   {file.path.split("/").pop()}
+//                 </span>
 //               </button>
 //             );
 //           })}
@@ -626,7 +390,7 @@
 //       )}
 
 //       {/* Toolbar */}
-//       <div className="flex items-center justify-between px-4 pt-3 pb-2.5 shrink-0">
+//       <div className="flex items-center justify-between gap-2 px-3 sm:px-4 pt-3 pb-2.5 shrink-0">
 //         {canPreview ? (
 //           <div className="relative flex items-center bg-black/[0.04] rounded-md p-0.5">
 //             <span
@@ -638,16 +402,20 @@
 //             />
 //             <button
 //               onClick={() => setView("code")}
-//               className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
-//                 view === "code" ? "text-black/80" : "text-black/40 hover:text-black/60"
+//               className={`relative z-10 flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
+//                 view === "code"
+//                   ? "text-black/80"
+//                   : "text-black/40 hover:text-black/60"
 //               }`}
 //             >
 //               <Code2 size={13} /> Code
 //             </button>
 //             <button
 //               onClick={() => setView("preview")}
-//               className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
-//                 view === "preview" ? "text-black/80" : "text-black/40 hover:text-black/60"
+//               className={`relative z-10 flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
+//                 view === "preview"
+//                   ? "text-black/80"
+//                   : "text-black/40 hover:text-black/60"
 //               }`}
 //             >
 //               <Eye size={13} /> Preview
@@ -659,7 +427,7 @@
 //           </span>
 //         )}
 
-//         <div className="flex items-center gap-2">
+//         <div className="flex items-center gap-2 shrink-0">
 //           {view === "code" && (
 //             <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/30 hidden sm:inline">
 //               {lineCount} line{lineCount !== 1 ? "s" : ""}
@@ -695,31 +463,67 @@
 //         </div>
 //       </div>
 
-//       {/* Content */}
-//       <div className="flex-1 overflow-hidden px-4 pb-4">
-//         <div key={view + activeFileIdx} className="h-full motion-safe:animate-[fadeUp_0.2s_ease-out_both]">
+//       {/* Content — code scrolls internally (and wraps pathologically long
+//           lines instead of forcing horizontal-only scroll); preview fills
+//           whatever space is left so it never relies on a 100vh guess that
+//           breaks under mobile browser chrome. */}
+//       <div
+//         className={`flex-1 min-h-0 px-3 sm:px-4 pb-3 sm:pb-4 ${
+//           view === "preview" ? "flex flex-col" : "overflow-y-auto"
+//         }`}
+//       >
+//         <div
+//           key={view + activeFileIdx}
+//           className={`motion-safe:animate-[fadeUp_0.2s_ease-out_both] ${
+//             view === "preview" ? "flex-1 min-h-0 flex flex-col" : ""
+//           }`}
+//         >
 //           {view === "code" ? (
-//             <div className="h-full rounded-xl border border-black/[0.07] overflow-auto bg-white">
+//             <div
+//               ref={codeWrapRef}
+//               className="rounded-xl border border-black/[0.07] bg-white overflow-x-auto"
+//             >
 //               <SyntaxHighlighter
 //                 language={getLanguage(activeFile)}
 //                 style={oneLight}
 //                 showLineNumbers
+//                 wrapLongLines={shouldWrapLongLines}
 //                 customStyle={{
 //                   margin: 0,
 //                   padding: "14px",
 //                   fontSize: "12.5px",
 //                   lineHeight: 1.65,
 //                   background: "#ffffff",
-//                   minHeight: "100%",
+//                   // Only force a "size to content" width for normal-length
+//                   // lines. Once a line is pathologically long (minified
+//                   // bundles, a long single-line HTML doc, etc.) we drop
+//                   // this so the code area wraps within the container
+//                   // instead of stretching into an unreadable single row.
+//                   width: shouldWrapLongLines ? "100%" : "max-content",
+//                   minWidth: "100%",
 //                 }}
 //                 codeTagProps={{ style: { background: "transparent" } }}
-//                 lineNumberStyle={{ color: "rgba(0,0,0,0.22)", minWidth: "2.2em" }}
+//                 lineNumberStyle={{
+//                   color: "rgba(0,0,0,0.22)",
+//                   minWidth: "2.2em",
+//                 }}
+//                 customPreTagProps={
+//                   shouldWrapLongLines
+//                     ? {
+//                         style: {
+//                           whiteSpace: "pre-wrap",
+//                           wordBreak: "break-word",
+//                           overflowWrap: "anywhere",
+//                         },
+//                       }
+//                     : undefined
+//                 }
 //               >
 //                 {activeFile?.content || ""}
 //               </SyntaxHighlighter>
 //             </div>
 //           ) : (
-//             <div className="h-full rounded-xl border border-black/[0.07] overflow-hidden bg-white">
+//             <div className="flex-1 min-h-[280px] rounded-xl border border-black/[0.07] overflow-hidden bg-white">
 //               <iframe
 //                 title="artifact-preview"
 //                 srcDoc={previewDoc}
@@ -743,27 +547,41 @@
 //  * - onSelect(id | null): open a specific artifact, or null to go back to the list
 //  * - onClose(): close the panel entirely
 //  */
-// function ArtifactPanel({ artifacts = [], selectedId = null, onSelect, onClose }) {
+// function ArtifactPanel({
+//   artifacts = [],
+//   selectedId = null,
+//   onSelect,
+//   onClose,
+//   onWidthChange,
+// }) {
 //   const selectedEntry = artifacts.find((e) => e.id === selectedId) || null;
 //   const isList = !selectedEntry;
 
+//   const selectedFiles = useMemo(
+//     () => (selectedEntry ? normalizeArtifact(selectedEntry.artifact) : []),
+//     [selectedEntry],
+//   );
+
+//   useLayoutEffect(() => {
+//     if (isList) onWidthChange?.(null);
+//   }, [isList, onWidthChange]);
+
 //   const headerTitle = isList
 //     ? "Artifacts"
-//     : selectedEntry.artifact.title ||
-//       normalizeArtifact(selectedEntry.artifact)[0]?.name ||
-//       "Artifact";
+//     : selectedFiles[0]?.name || selectedEntry.artifact.title || "Artifact";
 
 //   const headerSubtitle = isList
 //     ? `${artifacts.length} file${artifacts.length !== 1 ? "s" : ""} in this conversation`
 //     : selectedEntry.artifact.description ||
-//       `${normalizeArtifact(selectedEntry.artifact).length} file${
-//         normalizeArtifact(selectedEntry.artifact).length !== 1 ? "s" : ""
-//       }`;
+//       `${selectedFiles.length} file${selectedFiles.length !== 1 ? "s" : ""}`;
 
 //   return (
-//     <aside className="h-full w-[92vw] sm:w-[440px] border-l border-black/[0.07] bg-white flex flex-col">
+//     <aside className="h-full min-h-0 w-full border-l border-black/[0.07] bg-white flex flex-col">
 //       {/* Header */}
-//       <div className="flex items-center gap-3 px-4 h-16 border-b border-black/[0.06] shrink-0 bg-white">
+//       <div
+//         className="flex items-center gap-3 px-3 sm:px-4 h-14 sm:h-16 border-b border-black/[0.06] shrink-0 bg-white"
+//         style={{ paddingTop: "env(safe-area-inset-top)" }}
+//       >
 //         {!isList && artifacts.length > 1 ? (
 //           <button
 //             onClick={() => onSelect(null)}
@@ -774,7 +592,7 @@
 //           </button>
 //         ) : (
 //           <div
-//             className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+//             className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0"
 //             style={{ background: "rgba(30,122,86,0.1)" }}
 //           >
 //             <FileCode2 size={16} className="text-[#1E7A56]" />
@@ -807,6 +625,7 @@
 //           entry={selectedEntry}
 //           onBack={() => onSelect(null)}
 //           showBack={artifacts.length > 1}
+//           onWidthChange={onWidthChange}
 //         />
 //       )}
 //     </aside>
@@ -815,9 +634,13 @@
 
 // export default ArtifactPanel;
 
-
-
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
@@ -831,6 +654,8 @@ import {
   ChevronLeft,
   Files,
 } from "lucide-react";
+
+const MOBILE_BREAKPOINT = 768;
 
 const EXT_BY_LANGUAGE = {
   javascript: "js",
@@ -876,8 +701,6 @@ const LANGUAGE_BY_EXT = {
   xml: "markup",
 };
 
-// Small per-extension accent used for the file-tab dot / list glyph — gives
-// files a bit of visual identity without leaning on a dark editor chrome.
 const ACCENT_BY_EXT = {
   js: "#F2C94C",
   jsx: "#61DAFB",
@@ -893,6 +716,8 @@ const ACCENT_BY_EXT = {
   yaml: "#CB171E",
 };
 
+const WRAP_AFTER_CHARS = 180;
+
 function getExt(name = "") {
   return name.split(".").pop()?.toLowerCase() || "";
 }
@@ -900,16 +725,13 @@ function getExt(name = "") {
 function getAccent(name) {
   return ACCENT_BY_EXT[getExt(name)] || "#1E7A56";
 }
+
 function getLanguage(file) {
   if (file?.language) return file.language;
   const ext = file?.path?.split(".").pop()?.toLowerCase();
   return LANGUAGE_BY_EXT[ext] || "markup"; // or "clike" — never "text"
 }
 
-// Handles both artifact shapes:
-// - new structured shape: { files: [{ path, language, content }] }
-// - old single-snippet fallback: { type: "markdown", language, code }
-// Also handles files that only have `name` (no `path`).
 function normalizeArtifact(artifact) {
   if (!artifact) return [];
 
@@ -940,29 +762,68 @@ function normalizeArtifact(artifact) {
 
   return [];
 }
-//
+
+// Escapes a string for safe use inside a RegExp constructor.
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function buildPreviewDoc(files) {
-  // const html = files.find((f) => /\.html?$/i.test(f.path));
   const html =
     files.find((f) => f.path === "index.html") ??
     files.find((f) => /\.html?$/i.test(f.path));
-  const css = files.find((f) => /\.css$/i.test(f.path));
-  const js = files.find((f) => /\.(js|jsx)$/i.test(f.path));
 
   if (!html) return null;
 
-  let doc = html.content;
+  const cssFiles = files.filter((f) => /\.css$/i.test(f.path));
+  const jsFiles = files.filter((f) => /\.(js|jsx)$/i.test(f.path));
 
-  if (css) {
+  let doc = html.content;
+  const inlinedPaths = new Set();
+
+  cssFiles.forEach((file) => {
+    const base = escapeRegExp(file.path.split("/").pop());
+    const linkTagPattern = new RegExp(
+      `<link[^>]*href=["'][^"']*${base}["'][^>]*>`,
+      "i",
+    );
+    if (linkTagPattern.test(doc)) {
+      doc = doc.replace(linkTagPattern, `<style>${file.content}</style>`);
+      inlinedPaths.add(file.path);
+    }
+  });
+
+  jsFiles.forEach((file) => {
+    const base = escapeRegExp(file.path.split("/").pop());
+    const scriptTagPattern = new RegExp(
+      `<script[^>]*src=["'][^"']*${base}["'][^>]*>\\s*</script>`,
+      "i",
+    );
+    if (scriptTagPattern.test(doc)) {
+      doc = doc.replace(scriptTagPattern, `<script>${file.content}</script>`);
+      inlinedPaths.add(file.path);
+    }
+  });
+
+  const remainingCss = cssFiles.filter((f) => !inlinedPaths.has(f.path));
+  const remainingJs = jsFiles.filter((f) => !inlinedPaths.has(f.path));
+
+  if (remainingCss.length > 0) {
+    const styleBlock = remainingCss
+      .map((f) => `<style>${f.content}</style>`)
+      .join("");
     doc = doc.includes("</head>")
-      ? doc.replace("</head>", `<style>${css.content}</style></head>`)
-      : `<style>${css.content}</style>${doc}`;
+      ? doc.replace("</head>", `${styleBlock}</head>`)
+      : `${styleBlock}${doc}`;
   }
 
-  if (js) {
+  if (remainingJs.length > 0) {
+    const scriptBlock = remainingJs
+      .map((f) => `<script>${f.content}</script>`)
+      .join("");
     doc = doc.includes("</body>")
-      ? doc.replace("</body>", `<script>${js.content}</script></body>`)
-      : `${doc}<script>${js.content}</script>`;
+      ? doc.replace("</body>", `${scriptBlock}</body>`)
+      : `${doc}${scriptBlock}`;
   }
 
   return doc;
@@ -981,6 +842,22 @@ function relativeTime(date) {
   const days = Math.round(hrs / 24);
   return `${days}d ago`;
 }
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined"
+      ? window.innerWidth < MOBILE_BREAKPOINT
+      : false,
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return isMobile;
+}
 
 /* ------------------------------ list view ------------------------------ */
 
@@ -991,14 +868,13 @@ function ArtifactListRow({ entry, onOpen }) {
   );
   const primary = files[0];
   const accent = getAccent(primary?.path || primary?.name);
-  // const title = entry.artifact.title || primary?.name || "Artifact";
   const title = primary?.name || entry.artifact.title || "Artifact";
   const when = relativeTime(entry.createdAt);
 
   return (
     <button
       onClick={onOpen}
-      className="w-full text-left rounded-xl border border-black/[0.07] bg-white px-3.5 py-3 flex items-center gap-3 transition-all duration-150 hover:border-black/[0.14] hover:shadow-[0_4px_14px_rgba(20,21,26,0.06)] active:scale-[0.99]"
+      className="w-full text-left rounded-xl border border-black/[0.07] bg-white px-3 py-2.5 sm:px-3.5 sm:py-3 flex items-center gap-3 transition-all duration-150 hover:border-black/[0.14] hover:shadow-[0_4px_14px_rgba(20,21,26,0.06)] active:scale-[0.99]"
     >
       <span
         className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -1023,7 +899,7 @@ function ArtifactListRow({ entry, onOpen }) {
 
 function ArtifactListView({ entries, onOpen }) {
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2">
+    <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 sm:px-4 space-y-2">
       {entries.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center px-6 py-16">
           <span
@@ -1063,6 +939,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
   const [view, setView] = useState("code");
   const [copied, setCopied] = useState(false);
   const codeWrapRef = useRef(null);
+  const isMobile = useIsMobile();
 
   // Reset to the first file whenever a different artifact is opened.
   useLayoutEffect(() => {
@@ -1072,43 +949,32 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
 
   const activeFile = files[activeFileIdx];
 
-  // ADD THIS FILES
-  const maxContentWidth = useMemo(() => {
+  const longestLineChars = useMemo(() => {
+    if (files.length === 0) return 0;
     return Math.max(
       ...files.map((file) => {
         const lines = (file.content || "").split("\n");
-        return Math.max(...lines.map((line) => line.length)) * 8;
+        return Math.max(0, ...lines.map((line) => line.length));
       }),
     );
   }, [files]);
 
+  const shouldWrapLongLines = longestLineChars > WRAP_AFTER_CHARS;
+  const cappedLineChars = Math.min(longestLineChars, WRAP_AFTER_CHARS);
+  const maxContentWidth = cappedLineChars * 8;
+
   const previewDoc = useMemo(() => buildPreviewDoc(files), [files]);
   const canPreview = Boolean(previewDoc);
 
-  // Measure the code's true (unwrapped) width so the panel itself can grow
-  // to fit a long line, instead of only scrolling inside a fixed box.
-  // useLayoutEffect(() => {
-  //   if (!onWidthChange) return;
-  //   if (view !== "code" || !codeWrapRef.current) {
-  //     onWidthChange(null);
-  //     return;
-  //   }
-  //   // scrollWidth reflects the code's real content width regardless of how
-  //   // narrow the panel currently is, since the <pre> inside is width: max-content.
-  //   const contentWidth = codeWrapRef.current.scrollWidth;
-  //   // + outer content padding (16px each side) and a little breathing room
-  //   onWidthChange(contentWidth + 32 + 24);
-  // }, [activeFileIdx, view, activeFile?.content, onWidthChange]);
-
-  // ALSO THESE
   useLayoutEffect(() => {
     if (!onWidthChange) return;
-    if (view !== "code") return;
-
+    if (view !== "code" || isMobile) {
+      onWidthChange(null);
+      return;
+    }
     const width = Math.max(800, Math.min(1400, maxContentWidth + 80));
-
     onWidthChange(width);
-  }, [view, maxContentWidth, onWidthChange]);
+  }, [view, maxContentWidth, isMobile, onWidthChange]);
 
   const tabRefs = useRef([]);
   const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
@@ -1154,9 +1020,9 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
 
   return (
     <>
-      {/* File tabs */}
-      {files.length > 1 && (
-        <div className="relative flex items-center gap-1 px-3 pt-3 overflow-x-auto shrink-0">
+      {/* File tabs — only relevant while browsing code, not while previewing */}
+      {files.length > 1 && view === "code" && (
+        <div className="relative flex items-center gap-1 px-2.5 sm:px-3 pt-3 overflow-x-auto shrink-0 [-webkit-overflow-scrolling:touch]">
           {files.map((file, idx) => {
             const isActive = idx === activeFileIdx;
             const tabAccent = getAccent(file.path);
@@ -1165,7 +1031,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
                 key={file.path + idx}
                 ref={(el) => (tabRefs.current[idx] = el)}
                 onClick={() => setActiveFileIdx(idx)}
-                className={`relative shrink-0 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors duration-200 ${
+                className={`relative shrink-0 flex items-center gap-1.5 rounded-md px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-[IBM_Plex_Mono,monospace] transition-colors duration-200 ${
                   isActive
                     ? "text-black/85"
                     : "text-black/40 hover:text-black/70 hover:bg-black/[0.03]"
@@ -1177,7 +1043,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
                     background: isActive ? tabAccent : "rgba(0,0,0,0.18)",
                   }}
                 />
-                <span className="truncate max-w-[140px]">
+                <span className="truncate max-w-[100px] sm:max-w-[140px]">
                   {file.path.split("/").pop()}
                 </span>
               </button>
@@ -1196,7 +1062,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2.5 shrink-0">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 pt-3 pb-2.5 shrink-0">
         {canPreview ? (
           <div className="relative flex items-center bg-black/[0.04] rounded-md p-0.5">
             <span
@@ -1208,7 +1074,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
             />
             <button
               onClick={() => setView("code")}
-              className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
+              className={`relative z-10 flex items-center gap-1.5 px-2.5 sm:px-2.5 py-1.5 sm:py-1 rounded text-xs font-medium transition-colors duration-200 ${
                 view === "code"
                   ? "text-black/80"
                   : "text-black/40 hover:text-black/60"
@@ -1218,7 +1084,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
             </button>
             <button
               onClick={() => setView("preview")}
-              className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors duration-200 ${
+              className={`relative z-10 flex items-center gap-1.5 px-2.5 sm:px-2.5 py-1.5 sm:py-1 rounded text-xs font-medium transition-colors duration-200 ${
                 view === "preview"
                   ? "text-black/80"
                   : "text-black/40 hover:text-black/60"
@@ -1233,7 +1099,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
           </span>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {view === "code" && (
             <span className="text-[11px] font-[IBM_Plex_Mono,monospace] text-black/30 hidden sm:inline">
               {lineCount} line{lineCount !== 1 ? "s" : ""}
@@ -1244,7 +1110,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
               <button
                 onClick={handleCopy}
                 title="Copy file"
-                className="w-7 h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
+                className="w-8 h-8 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
               >
                 <span className="relative w-3.5 h-3.5 inline-flex items-center justify-center">
                   <Copy
@@ -1260,7 +1126,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
               <button
                 onClick={handleDownload}
                 title="Download file"
-                className="w-7 h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
+                className="w-8 h-8 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-black/40 hover:text-[#1E7A56] hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
               >
                 <Download size={14} />
               </button>
@@ -1269,11 +1135,21 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+      <div
+        className={`flex-1 min-h-0 px-3 sm:px-4 pb-3 sm:pb-4 ${
+          view === "preview" ? "flex flex-col" : "overflow-y-auto"
+        }`}
+        style={
+          view === "preview"
+            ? { paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }
+            : undefined
+        }
+      >
         <div
           key={view + activeFileIdx}
-          className="motion-safe:animate-[fadeUp_0.2s_ease-out_both]"
+          className={`motion-safe:animate-[fadeUp_0.2s_ease-out_both] ${
+            view === "preview" ? "flex-1 min-h-0 flex flex-col" : ""
+          }`}
         >
           {view === "code" ? (
             <div
@@ -1284,13 +1160,14 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
                 language={getLanguage(activeFile)}
                 style={oneLight}
                 showLineNumbers
+                wrapLongLines={shouldWrapLongLines}
                 customStyle={{
                   margin: 0,
                   padding: "14px",
                   fontSize: "12.5px",
                   lineHeight: 1.65,
                   background: "#ffffff",
-                  width: "max-content",
+                  width: shouldWrapLongLines ? "100%" : "max-content",
                   minWidth: "100%",
                 }}
                 codeTagProps={{ style: { background: "transparent" } }}
@@ -1298,17 +1175,35 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
                   color: "rgba(0,0,0,0.22)",
                   minWidth: "2.2em",
                 }}
+                PreTag={({ children, ...rest }) => (
+                  <pre
+                    {...rest}
+                    style={{
+                      ...rest.style,
+                      ...(shouldWrapLongLines
+                        ? {
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                            overflowWrap: "anywhere",
+                          }
+                        : null),
+                    }}
+                  >
+                    {children}
+                  </pre>
+                )}
               >
                 {activeFile?.content || ""}
               </SyntaxHighlighter>
             </div>
           ) : (
-            <div className="h-[calc(100vh-220px)] rounded-xl border border-black/[0.07] overflow-hidden bg-white">
+            <div className="flex-1 min-h-[280px] rounded-xl border border-black/[0.07] overflow-hidden bg-white">
               <iframe
                 title="artifact-preview"
                 srcDoc={previewDoc}
-                sandbox="allow-scripts"
+                sandbox="allow-scripts allow-same-origin"
                 className="w-full h-full"
+                style={{ touchAction: "manipulation" }}
               />
             </div>
           )}
@@ -1320,13 +1215,6 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
 
 /* -------------------------------- panel --------------------------------- */
 
-/**
- * Props:
- * - artifacts: [{ id, artifact, agent?, createdAt? }]  (every artifact in the conversation)
- * - selectedId: id of the artifact currently open, or null to show the list
- * - onSelect(id | null): open a specific artifact, or null to go back to the list
- * - onClose(): close the panel entirely
- */
 function ArtifactPanel({
   artifacts = [],
   selectedId = null,
@@ -1337,38 +1225,42 @@ function ArtifactPanel({
   const selectedEntry = artifacts.find((e) => e.id === selectedId) || null;
   const isList = !selectedEntry;
 
+  const selectedFiles = useMemo(
+    () => (selectedEntry ? normalizeArtifact(selectedEntry.artifact) : []),
+    [selectedEntry],
+  );
+
   useLayoutEffect(() => {
     if (isList) onWidthChange?.(null);
   }, [isList, onWidthChange]);
 
   const headerTitle = isList
     ? "Artifacts"
-    : normalizeArtifact(selectedEntry.artifact)[0]?.name ||
-      selectedEntry.artifact.title ||
-      "Artifact";
+    : selectedFiles[0]?.name || selectedEntry.artifact.title || "Artifact";
 
   const headerSubtitle = isList
     ? `${artifacts.length} file${artifacts.length !== 1 ? "s" : ""} in this conversation`
     : selectedEntry.artifact.description ||
-      `${normalizeArtifact(selectedEntry.artifact).length} file${
-        normalizeArtifact(selectedEntry.artifact).length !== 1 ? "s" : ""
-      }`;
+      `${selectedFiles.length} file${selectedFiles.length !== 1 ? "s" : ""}`;
 
   return (
-    <aside className="h-full min-h-0 w-full border-l border-black/[0.07] bg-white flex flex-col">
+    <aside className="h-full min-h-0 w-full max-w-full border-l border-black/[0.07] bg-white flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-black/[0.06] shrink-0 bg-white">
+      <div
+        className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 h-14 sm:h-16 border-b border-black/[0.06] shrink-0 bg-white"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         {!isList && artifacts.length > 1 ? (
           <button
             onClick={() => onSelect(null)}
             title="All artifacts"
-            className="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-black/40 hover:text-black hover:bg-black/[0.06] transition-colors duration-150"
+            className="w-9 h-9 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-black/40 hover:text-black hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
           >
             <ChevronLeft size={17} />
           </button>
         ) : (
           <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0"
             style={{ background: "rgba(30,122,86,0.1)" }}
           >
             <FileCode2 size={16} className="text-[#1E7A56]" />
@@ -1387,7 +1279,7 @@ function ArtifactPanel({
         <button
           onClick={onClose}
           title="Close"
-          className="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-black/35 hover:text-black hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
+          className="w-9 h-9 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-black/35 hover:text-black hover:bg-black/[0.06] active:scale-90 transition-all duration-150"
         >
           <X size={16} />
         </button>
