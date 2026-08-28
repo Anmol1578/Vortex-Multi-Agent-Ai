@@ -8,13 +8,26 @@ const PORT = process.env.PORT;
 
 const app = express();
 app.use(express.json());
-app.use("/",router);
 
-app.get("/",(req,res)=>{
-    res.json({message: "HELLO FROM AGENT"});
+app.get("/", (req, res) => {
+  res.json({ message: "HELLO FROM AGENT" });
 });
 
-app.listen(PORT,()=>{
-    console.log(`AGENT SERVICE is running on port ${PORT}`);
-    connectDB();
-})
+app.use("/", router);
+
+app.use((err, req, res, next) => {
+  console.error("[Agent Service Error]:", err);
+
+  const status = err.status || err.statusCode || 500;
+
+  return res.status(status).json({
+    success: false,
+    code: err.code || "INTERNAL_SERVER_ERROR",
+    message: err.message || "Internal server error",
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`AGENT SERVICE is running on port ${PORT}`);
+  connectDB();
+});

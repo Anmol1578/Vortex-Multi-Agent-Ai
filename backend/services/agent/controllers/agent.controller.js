@@ -1,72 +1,3 @@
-// import axios from "axios";
-// import { graph } from "../graph/graph.js";
-// import { addMessage } from "../config/memory.js";
-
-// export const agent = async (req, res) => {
-//   try {
-//     const { prompt, conversationId, agent: agentType } = req.body;
-
-//     if (!prompt || !conversationId) {
-//       return res
-//         .status(400)
-//         .json({ message: "prompt and conversationId are required" });
-//     }
-
-//     // Persist the user message to the memory store FIRST so the graph
-//     // has access to it as context when it runs.
-//     await addMessage(conversationId, "user", prompt);
-
-//     const result = await graph.invoke({
-//       prompt,
-//       conversationId,
-//       agent: agentType,
-//     });
-
-//     const response = result?.aiResponse;
-
-//     if (!response) {
-//       console.error("[agent controller] agent returned no aiResponse", {
-//         agentType,
-//         routedAgent: result?.agent,
-//         conversationId,
-//       });
-//       return res.status(500).json({ message: "agent produced no response" });
-//     }
-
-//     const images = result?.images ?? [];
-
-//     // Persist the assistant reply to memory.
-//     await addMessage(conversationId, "assistant", response);
-
-//     // Single source of truth for durable chat history (DB via chat service).
-//     // Save both messages here instead of duplicating writes across two stores.
-//     await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
-//       conversationId,
-//       role: "user",
-//       content: prompt,
-//     });
-
-//     await axios.post(`${process.env.CHAT_SERVICE_URL}/save-message`, {
-//       conversationId,
-//       role: "assistant",
-//       content: response,
-//       images, artifacts:result?.artifacts
-//     });
-
-//     return res.status(200).json({
-//       content: response,
-//       agent: result?.agent,
-//       images,
-//         artifacts: result?.artifacts ?? [],
-//     });
-//   } catch (error) {
-//     console.error("[agent controller]", error);
-//     return res.status(500).json({ message: "agent error" });
-//   }
-// };
-
-
-
 // 24 AUGUST
 
 // import axios from "axios";
@@ -226,8 +157,6 @@
 //   }
 // };
 
-
-
 // import axios from "axios";
 // import { graph } from "../graph/graph.js";
 // import { addMessage } from "../config/memory.js";
@@ -330,8 +259,6 @@
 //     });
 //   }
 // };
-
-
 
 // import axios from "axios";
 // import { graph } from "../graph/graph.js";
@@ -464,15 +391,14 @@
 //   }
 // };
 
-
-
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 
-export const agent = async (req, res) => {
+export const agent = async (req, res, next) => {
   const { prompt, conversationId, agent: agentType } = req.body;
-  const file = req.file
+  const file = req.file;
   const userId = req.headers["x-user-id"];
 
   try {
@@ -492,6 +418,8 @@ export const agent = async (req, res) => {
       });
     }
 
+    await checkAgentLimit(userId, agentType);
+
     await addMessage(conversationId, "user", prompt);
 
     const result = await graph.invoke({
@@ -499,7 +427,7 @@ export const agent = async (req, res) => {
       conversationId,
       agent: agentType,
       userId,
-      file
+      file,
     });
 
     const response = result?.aiResponse;
@@ -560,11 +488,15 @@ export const agent = async (req, res) => {
       artifacts,
       // credits: result?.credits,
       // deductedCredits: result?.deductedCredits,
-        credits: result?.creditDeduction?.credits,
-  deductedCredits: result?.creditDeduction?.deductedCredits,
+      credits: result?.creditDeduction?.credits,
+      deductedCredits: result?.creditDeduction?.deductedCredits,
     });
   } catch (error) {
     console.error("[agent controller]", error);
+
+    if (error.status) {
+      return res.status(error.status).json(error.data);
+    }
 
     if (error.code === "INSUFFICIENT_CREDITS") {
       return res.status(402).json({
@@ -577,10 +509,6 @@ export const agent = async (req, res) => {
       });
     }
 
-    return res.status(500).json({
-      success: false,
-      code: "AGENT_ERROR",
-      message: "The agent is temporarily unavailable.",
-    });
+    return next(error);
   }
 };
