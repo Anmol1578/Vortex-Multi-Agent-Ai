@@ -62,7 +62,7 @@ import { PDFParse } from "pdf-parse";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { vectorStore } from "../config/vectorDb.js";
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 
 /* -------------------------------------------------------------------------- */
 /* SYSTEM PROMPT                                                              */

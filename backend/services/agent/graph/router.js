@@ -263,7 +263,7 @@
 
 
 
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 
 const VALID_AGENTS = [
   "chat",

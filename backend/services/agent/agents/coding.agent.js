@@ -917,7 +917,7 @@
 //   };
 // };
 
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 
 const INTENTS = [
   "CODE_GENERATION",

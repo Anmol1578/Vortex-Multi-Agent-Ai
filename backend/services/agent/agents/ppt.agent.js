@@ -1,4 +1,4 @@
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 import { generatePpt } from "../utils/generatePpt.js";
 import { getFromS3 } from "../utils/getFromS3.js";
 import { uploadToS3 } from "../utils/uploadToS3.js";

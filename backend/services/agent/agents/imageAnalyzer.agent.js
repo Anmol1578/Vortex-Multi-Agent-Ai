@@ -314,7 +314,7 @@
 
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import fs from "fs/promises";
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 
 /* -------------------------------------------------------------------------- */
 /* SYSTEM PROMPT                                                              */

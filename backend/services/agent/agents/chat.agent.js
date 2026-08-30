@@ -3,7 +3,7 @@ import {
   HumanMessage,
   SystemMessage,
 } from "@langchain/core/messages";
-import { getModel } from "../config/llmmodels.js";
+import { getModel } from "../config/llmModels.js";
 import { getMemory } from "../config/memory.js";
 
 function buildSearchContext(searchResults) {
