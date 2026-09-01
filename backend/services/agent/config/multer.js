@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 
-const uploadDir = path.resolve("./temp");
+// const uploadDir = path.resolve("./temp");
+
+const uploadDir = path.resolve("./config/temp");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });

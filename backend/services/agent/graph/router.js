@@ -63,7 +63,6 @@
 //   - Example: "Create a PDF about NASA" -> pdf.
 //   - Example: "NASA PDF" -> pdf.
 
-
 // - ppt
 //   Use for:
 //   - Creating PowerPoint presentations
@@ -185,7 +184,6 @@
 
 // export const router = async (state) => {
 
-
 // if (state.agent && state.agent !== "auto") {
 //   const clean = sanitizeAgent(state.agent);
 //   if (clean) {
@@ -197,7 +195,6 @@
 //     };
 //   }
 // }
-
 
 // // PDF RAG // IMAGE ANALYZER
 
@@ -256,8 +253,6 @@
 //     },
 //   };
 // };
-
-
 
 
 
@@ -535,7 +530,10 @@ export const router = async (state) => {
       ...state,
       agent: deterministic,
       agentFallback: deterministic,
-      routerMeta: { source: "file-default", routedAt: new Date().toISOString() },
+      routerMeta: {
+        source: "file-default",
+        routedAt: new Date().toISOString(),
+      },
     };
   }
 
@@ -568,7 +566,8 @@ export const router = async (state) => {
     // Even on LLM failure, don't lose the file signal entirely if we can
     // salvage a reasonable default.
     if (state.file?.mimetype === "application/pdf") agent = "pdfRag";
-    else if (state.file?.mimetype?.startsWith("image/")) agent = "imageAnalyzer";
+    else if (state.file?.mimetype?.startsWith("image/"))
+      agent = "imageAnalyzer";
     fallback = agent;
   }
 
@@ -586,5 +585,3 @@ export const router = async (state) => {
     },
   };
 };
-
-
