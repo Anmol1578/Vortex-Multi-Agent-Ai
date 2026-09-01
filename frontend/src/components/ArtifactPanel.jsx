@@ -634,6 +634,10 @@
 
 // export default ArtifactPanel;
 
+
+
+
+
 import React, {
   useEffect,
   useLayoutEffect,
@@ -968,7 +972,7 @@ function ArtifactDetailView({ entry, onBack, showBack, onWidthChange }) {
 
   useLayoutEffect(() => {
     if (!onWidthChange) return;
-    if (view !== "code" || isMobile) {
+    if (isMobile) {
       onWidthChange(null);
       return;
     }

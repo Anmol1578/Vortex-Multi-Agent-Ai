@@ -1,29 +1,3 @@
-// import React from 'react'
-
-// import {AnimatePresence, motion} from 'motion/react'
-
-// function BillingDrawer({open, onClose}) {
-//   return (
-
-//     <AnimatePresence>
-//         {open && <>   <motion.div
-
-//     />
-
-//     <motion.div>
-
-//     </motion.div>
-
-//     </>
-
-//     }
-
-//     </AnimatePresence>
-//   )
-// }
-
-// export default BillingDrawer
-
 import React, { useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setUserdata } from "../redux/userSlice.js";
@@ -41,8 +15,6 @@ import {
 import { createOrder } from "../features/createOrder.js";
 import { verifyPayment } from "../features/verifyPayment.js";
 
-// Mirrors backend/config/Plans.js pricing + credits. Description/icon/features
-// are frontend-only display concerns, so they live here rather than the API.
 const PLANS = {
   free: {
     id: "free",
@@ -106,7 +78,7 @@ const rise = {
 };
 
 function UsageMeter({ used, total, remaining }) {
-    const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+  const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
   return (
     <motion.div variants={rise} className="mt-5">
       <div className="flex items-center justify-between mb-2">
@@ -361,16 +333,6 @@ function BillingDrawer({ open, onClose, userData }) {
             },
             userData.userId,
           );
-
-          // if (!verifyData) {
-          //   setPaymentStatus({ type: "error", message: "Payment verification failed." });
-          //   setLoadingPlan(null);
-          //   return;
-          // }
-
-          // setPaymentStatus({ type: "success", message: verifyData.message });
-          // setLoadingPlan(null);
-          // setTimeout(onClose, 1800);
 
           if (!verifyData) {
             setPaymentStatus({
