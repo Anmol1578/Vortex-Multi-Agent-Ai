@@ -1,18 +1,3 @@
-// import { deductCredits } from "../utils/deductCredits.js";
-
-// export const creditAgent = async (state) => {
-//   const result = await deductCredits(
-//     state.userId,
-//     state.agent
-//   );
-
-//   return {
-//     ...state,
-//     credits: result.credits,
-//     deductedCredits: result.deductedCredits,
-//   };
-// };
-
 import { deductCredits } from "../utils/deductCredits.js";
 
 export const creditAgent = async (state) => {

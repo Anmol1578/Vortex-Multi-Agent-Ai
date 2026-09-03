@@ -1,63 +1,4 @@
-/*
-
-import fs from "fs"
-import { PDFParse } from 'pdf-parse';
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { vectorStore } from "../config/vectorDb.js"
-import { getModel } from "../config/llmmodels.js"
-import { SystemMessage } from "@langchain/core/messages";
-
-export const pdfRag = async (state) => {
-    try {
-        const buffer=fs.readFileSync(state.file.path)
-        const pdf =  new PDFParse({
-            data:buffer
-        })
-
-        const result = pdf.getText()
-        const text = result.text
-
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize:1000,
-            chunkOverlap: 200 
-        })
-
-        const docs = await splitter.createDocuments([text])
-        const collectionName=`pdf-${Date.now()}`
-        const store = await vectorStore(docs , collectionName)
-
-        const relativeDocs = await store.similaritySearch(state.prompt,5)
-
-        const context = relativeDocs.map(d=>d.pageContent).join("/n/n")
-
-        const llm = await getModel("pdf-rag")
-
-
-        const messages = [
-            new SystemMessage(
-                `
-                You are Vortex Ai PDF Assistant
-
-
-                Rules : 
-
-
-
-                `
-            )
-        ]
-
-        const response = llm.invoke
-
-
-
-    } catch (error) {
-        
-    }
-}                                        */
-
-
-    import fs from "fs/promises";
+import fs from "fs/promises";
 import { PDFParse } from "pdf-parse";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
@@ -133,7 +74,9 @@ export const pdfRag = async (state) => {
     const text = result.text;
 
     if (!text || text.trim().length === 0) {
-      throw new Error("No extractable text found in PDF (it may be scanned/image-only)");
+      throw new Error(
+        "No extractable text found in PDF (it may be scanned/image-only)",
+      );
     }
 
     // 2. Split into chunks
@@ -214,7 +157,9 @@ export const pdfRag = async (state) => {
         await store.client.deleteCollection(collectionName);
         console.log(`[pdfRag] collection deleted: ${collectionName}`);
       } catch (err) {
-        console.warn(`[pdfRag] failed to delete collection ${collectionName}: ${err.message}`);
+        console.warn(
+          `[pdfRag] failed to delete collection ${collectionName}: ${err.message}`,
+        );
       }
     }
   }

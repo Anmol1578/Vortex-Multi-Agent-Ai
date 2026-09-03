@@ -1,41 +1,3 @@
-// import axios from "axios";
-
-// export const deductCredits = async (userId , agent) => {
-//   try {
-//     const {data} = await axios.get(
-//       `${process.env.AUTH_SERVICE_URL}/deduct-credits`,{userId , agent}
-//     );
-//     return data;
-//   } catch (error) {
-//     console.log(error);
-//     return null;
-//   }
-// };
-
-// import axios from "axios";
-
-// export const deductCredits = async (userId, agent) => {
-//   try {
-//     const { data } = await axios.post(
-//       `${process.env.AUTH_SERVICE_URL}/deduct-credits`,
-//       {
-//         userId,
-//         agent,
-//       }
-//     );
-
-//     return data;
-//   } catch (error) {
-//     console.error(
-//       "[deductCredits]",
-//       error.response?.data || error.message
-//     );
-
-//     throw error;
-//   }
-// };
-
-
 import axios from "axios";
 
 export const deductCredits = async (userId, agent) => {
@@ -45,11 +7,10 @@ export const deductCredits = async (userId, agent) => {
       {
         userId,
         agent,
-      }
+      },
     );
 
     return data;
-
   } catch (error) {
     const data = error.response?.data;
 
@@ -61,7 +22,7 @@ export const deductCredits = async (userId, agent) => {
      */
     if (data?.message === "Insufficient credits") {
       const creditError = new Error(
-        "You don't have enough credits to use this agent."
+        "You don't have enough credits to use this agent.",
       );
 
       creditError.code = "INSUFFICIENT_CREDITS";
