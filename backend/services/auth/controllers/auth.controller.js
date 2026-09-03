@@ -51,8 +51,8 @@ export const login = async (req, res) => {
 
     res.cookie("session", sessionToken, {
       httpOnly: true,
-      secure: true, //  FALSE TO TRUE CHANGE FOR RENDER DEPLOYMENT
-      sameSite: "none", //  STRICT TO NONE CHANGE FOR RENDER DEPLOYMENT
+      secure: false, 
+      sameSite: "strict", 
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -95,8 +95,8 @@ export const logout = async (req, res) => {
 
     res.clearCookie("session", {
       httpOnly: true,
-      secure: true, // false to true CHANGE FOR RENDER DEPLOYMENT
-      sameSite: "none",   // strict to none CHANGE FOR RENDER DEPLOYMENT
+      secure: false, 
+      sameSite: "strict",  
     });
 
     return res.status(200).json({
