@@ -74,26 +74,6 @@ export const login = async (req, res) => {
   }
 };
 
-// export const logout = async (req, res) => {
-//   try {
-//     const session = req.cookies?.session;
-
-//     if (session) {
-//       await redis.del(`session:${session}`);
-//     }
-
-//     res.clearCookie("session", {
-//       httpOnly: true,
-//       secure: false,
-//       sameSite: "strict",
-//     });
-
-//     return res.status(200).json({ message: "Logout successful" });
-//   } catch (error) {
-//     res.status(500).json({ message: `Error logging out: ${error.message}` });
-//   }
-// };
-
 export const logout = async (req, res) => {
   try {
     const sessionToken = req.cookies?.session;
@@ -132,84 +112,6 @@ export const logout = async (req, res) => {
   }
 };
 
-// WORKING AND TESTING SUCCESSFULLY
-
-// export const updateUserPayment = async (req, res) => {
-//   try {
-//     const { plan, credits, userId } = req.body;
-
-//     if (!plan || credits === undefined || !userId) {
-//       return res.status(400).json({
-//         message: "plan, credits and userId are required",
-//       });
-//     }
-
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
-//     }
-
-//     // Update plan
-//     user.plan = plan;
-
-//     // Reset credits for the new plan
-//     user.credits = credits;
-//     user.totalCredits = credits;
-
-//     // Plan expires in 30 days
-//     user.planExpiresAt = new Date(
-//       Date.now() + 30 * 24 * 60 * 60 * 1000
-//     );
-
-//     await user.save();
-
-//     // Update Redis session
-//     const session = req.cookies?.session;
-
-//     if (session) {
-//       await redis.set(
-//         `session:${session}`,
-//         JSON.stringify({
-//           userId: user._id,
-//           name: user.name,
-//           email: user.email,
-//           avatar: user.avatar,
-//           plan: user.plan,
-//           credits: user.credits,
-//           totalCredits: user.totalCredits,
-//           planExpiresAt: user.planExpiresAt,
-//         }),
-//         "EX",
-//         7 * 24 * 60 * 60
-//       );
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "User plan updated successfully",
-//       user: {
-//         userId: user._id,
-//         name: user.name,
-//         email: user.email,
-//         avatar: user.avatar,
-//         plan: user.plan,
-//         credits: user.credits,
-//         totalCredits: user.totalCredits,
-//         planExpiresAt: user.planExpiresAt,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("updateUserPayment error:", error);
-
-//     return res.status(500).json({
-//       message: `Error updating user payment: ${error.message}`,
-//     });
-//   }
-// };
-
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -246,23 +148,6 @@ export const updateUserPayment = async (req, res) => {
     user.totalCredits = credits;
     user.planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await user.save();
-
-    // const session = req.cookies?.session;
-    // await redis.set(
-    //   `session:${session}`,
-    //   JSON.stringify({
-    //     userId: user._id,
-    //     name: user.name,
-    //     email: user.email,
-    //     avatar: user.avatar,
-    //     plan: user.plan,
-    //     credits: user.credits,
-    //     totalCredits: user.totalCredits,
-    //     planExpiresAt: user.planExpiresAt,
-    //   }),
-    //   "EX",
-    //   7 * 24 * 60 * 60,
-    // );
 
     const sessionToken = await redis.get(`user-session:${user._id}`);
 
@@ -304,63 +189,6 @@ export const updateUserPayment = async (req, res) => {
       .json({ message: `Error updating user payment: ${error.message}` });
   }
 };
-
-// export const deductUserCredits = async (req, res) => {
-//   try {
-//     const { userId, agent } = req.body;
-
-//     const COST = {
-//       chat: 5,
-//       search: 15,
-//       coding: 30,
-//       pdf: 10,
-//       ppt: 10,
-//       vision: 25,
-//     };
-
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//    const requiredCredits = COST[agent];
-
-//    if (!requiredCredits) {
-//   return res.status(400).json({
-//     message: `Invalid agent: ${agent}`,
-//   });
-// }
-
-//     if (user.credits < requiredCredits) {
-//       return res.status(400).json({ message: "Insufficient credits" });
-//     }
-
-//     user.credits -= requiredCredits
-//     await user.save();
-
-//     const session = req.cookies?.session;
-//     await redis.set(
-//       `session:${session}`,
-//       JSON.stringify({
-//         userId: user._id,
-//         name: user.name,
-//         email: user.email,
-//         avatar: user.avatar,
-//         plan: user.plan,
-//         credits: user.credits,
-//         totalCredits: user.totalCredits,
-//         planExpiresAt: user.planExpiresAt,
-//       }),
-//       "EX",
-//       7 * 24 * 60 * 60,
-//     );
-//    return res.status(200).json({ success: true, credits: user.credits });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ message: `Error deducting user credits: ${error.message}` });
-//   }
-// };
 
 export const deductUserCredits = async (req, res) => {
   try {
