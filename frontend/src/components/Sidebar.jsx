@@ -1091,9 +1091,17 @@ function Sidebar() {
               <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/60 transition-colors group">
                 <div className="w-9 h-9 rounded-full bg-[#14151A] flex items-center justify-center overflow-hidden text-white shrink-0">
                   {userData?.avatar && !imageError ? (
+                    // <img
+                    //   src={userData.avatar}
+                    //   alt="User avatar"
+                    //   className="w-full h-full object-cover"
+                    //   onError={() => setImageError(true)}
+                    // />
+
                     <img
                       src={userData.avatar}
                       alt="User avatar"
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                       onError={() => setImageError(true)}
                     />
