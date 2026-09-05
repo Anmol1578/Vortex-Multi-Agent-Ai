@@ -231,6 +231,8 @@ export const getMessages = async (req, res) => {
       createdAt: 1,
     });
 
+    res.set("Cache-Control", "no-store");
+
     return res.status(200).json(messages);
   } catch (error) {
     return res.status(500).json({

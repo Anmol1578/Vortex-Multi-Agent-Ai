@@ -94,6 +94,7 @@ const messageSchema = new mongoose.Schema(
     conversationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conversation",
+      index: true,
     },
 
     role: {
@@ -142,6 +143,12 @@ const messageSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// ============================================================
+// INDEXES
+// ============================================================
+
+messageSchema.index({ conversationId: 1, createdAt: 1 });
 
 // ============================================================
 // MODEL
