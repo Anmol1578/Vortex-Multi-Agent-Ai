@@ -7,11 +7,11 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "vortexai-317ca.firebaseapp.com",
-  projectId: "vortexai-317ca",
-  storageBucket: "vortexai-317ca.firebasestorage.app",
-  messagingSenderId: "870389574414",
-  appId: "1:870389574414:web:df30b0c28f2445b810455f"
+  authDomain: "vortex-new.firebaseapp.com",
+  projectId: "vortex-new",
+  storageBucket: "vortex-new.firebasestorage.app",
+  messagingSenderId: "1082703625979",
+  appId: "1:1082703625979:web:8c6ce398d445b74861ba5e"
 };
 
 // Initialize Firebase
