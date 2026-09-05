@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { createOrder } from "../features/createOrder.js";
 import { verifyPayment } from "../features/verifyPayment.js";
+import { loadRazorpay } from "../features/loadRazorpay.js"; 
+
 
 const PLANS = {
   free: {
@@ -296,6 +298,7 @@ function BillingDrawer({ open, onClose, userData }) {
 
     try {
       // createOrder returns null on any failed request (invalid plan, server error, etc).
+       await loadRazorpay();
       const orderData = await createOrder({
         plan: planId,
         userId: userData.userId,
@@ -323,7 +326,7 @@ function BillingDrawer({ open, onClose, userData }) {
             message: "Verifying payment...",
           });
 
-          console.log("Payment response:", response);
+          // console.log("Payment response:", response); 
 
           const verifyData = await verifyPayment(
             {
