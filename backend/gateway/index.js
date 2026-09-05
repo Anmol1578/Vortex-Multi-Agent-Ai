@@ -1,5 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
+import {
+  warmupServices,
+  startKeepAlive,
+  recordActivity,
+} from "./utils/serviceWarmup.js";
 import proxy from "express-http-proxy";
 dotenv.config();
 
@@ -24,6 +29,12 @@ app.use(
 app.use(morgan("dev"));
 app.use(cookieParser());
 
+// Any real API traffic counts as "the platform is in use" for keep-alive purposes.
+app.use("/api", (req, res, next) => {
+  recordActivity();
+  next();
+});
+
 app.use("/api/auth", proxy(process.env.AUTH_SERVICE_URL));
 app.use("/api/chat", protect, proxyWithHeader(process.env.CHAT_SERVICE_URL));
 app.use("/api/agent", protect, proxyWithHeader(process.env.AGENT_SERVICE_URL));
@@ -34,6 +45,20 @@ app.use(
 );
 
 app.get("/api/me", protect, getCurrentUser);
+
+// Manually kick off warmup for all backend services. The gateway only runs
+// warmupServices() once, on its own boot - it never re-fires just because
+// the gateway happens to already be awake while the other services went to
+// sleep independently. The frontend hits this route as soon as the user
+// clicks Login so all services start waking in parallel with the Google
+// popup flow, instead of waiting on the 10-minute keepalive loop.
+app.get("/api/warmup", (req, res) => {
+  warmupServices().catch((error) => {
+    console.error("[warmup] Manual warmup failed:", error.message);
+  });
+
+  res.json({ message: "Warmup triggered" });
+});
 
 app.get("/", (req, res) => {
   res.json({ message: "Hello From Gateway Service" });
@@ -50,4 +75,13 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Wake all backend services in parallel on boot.
+  warmupServices().catch((error) => {
+    console.error("[warmup] Warmup failed:", error.message);
+  });
+
+  // Keep all services warm while the platform is actively being used;
+  // let them sleep naturally once activity stops.
+  startKeepAlive();
 });
