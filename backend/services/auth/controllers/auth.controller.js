@@ -4,6 +4,17 @@ import User from "../models/user.model.js";
 import crypto from "crypto";
 import redis from "../../../shared/redis/redis.js";
 
+// In production the frontend and backend live on different Render subdomains,
+// so the session cookie must be SameSite=None + Secure or the browser will
+// silently drop it on every cross-site request. Locally (http://localhost)
+// "lax" + non-secure keeps working as before.
+const isProd = process.env.NODE_ENV === "production";
+const sessionCookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+};
+
 export const login = async (req, res) => {
   try {
     const { token } = req.body;
@@ -50,9 +61,7 @@ export const login = async (req, res) => {
     ); // Set session to expire in 7 days
 
     res.cookie("session", sessionToken, {
-      httpOnly: true,
-      secure: false, 
-      sameSite: "strict", 
+      ...sessionCookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -93,11 +102,7 @@ export const logout = async (req, res) => {
       await redis.del(`session:${sessionToken}`);
     }
 
-    res.clearCookie("session", {
-      httpOnly: true,
-      secure: false, 
-      sameSite: "strict",  
-    });
+    res.clearCookie("session", sessionCookieOptions);
 
     return res.status(200).json({
       success: true,
